@@ -1,0 +1,227 @@
+{
+     "otherClass": {
+          "obj1": {
+               "par1": [
+                    [
+                         1,
+                         2
+                    ],
+                    [
+                         3,
+                         4
+                    ]
+               ],
+               "par2": 1,
+               "par3": "gaglioffo"
+          },
+          "obj3": {
+               "par1": [
+                    [
+                         9,
+                         9
+                    ],
+                    [
+                         9,
+                         9
+                    ]
+               ],
+               "par2": 999999,
+               "par3": "gaglioffoloffo"
+          }
+     },
+     "anotherClass": {
+          "obj1": {
+               "par1": [
+                    0,
+                    0,
+                    0
+               ],
+               "par2": "corallo",
+               "par3": 100,
+               "par4": 1000,
+               "par5": 10000
+          },
+          "obj4": {
+               "par1": [
+                    0,
+                    0,
+                    0
+               ],
+               "par2": "corallo",
+               "par3": 100,
+               "par4": 1000,
+               "par5": 10000
+          }
+     },
+     "ContoursFD": {
+          "obj1": {
+               "par1": [
+                    [
+                         1,
+                         2
+                    ],
+                    [
+                         3,
+                         4
+                    ]
+               ],
+               "par2": 1,
+               "par3": "gaglioffo",
+               "par4": 100,
+               "par5": 1000
+          },
+          "obj3": {
+               "par1": {
+                    "value": [
+                         [
+                              9,
+                              9
+                         ],
+                         [
+                              9,
+                              9
+                         ]
+                    ],
+                    "interface": true
+               },
+               "par2": {
+                    "value": 10,
+                    "interface": true
+               },
+               "par3": {
+                    "value": "ciao",
+                    "interface": false
+               },
+               "par4": {
+                    "value": 9999,
+                    "interface": true
+               },
+               "par5": {
+                    "value": 999999,
+                    "interface": true
+               }
+          }
+     },
+     "HSVMask": {
+          "obj1": {
+               "par1": [
+                    0,
+                    0,
+                    0
+               ],
+               "par2": "corallo",
+               "par3": 100
+          },
+          "obj4": {
+               "par1": [
+                    0,
+                    0,
+                    0
+               ],
+               "par2": "corallo",
+               "par3": 100
+          },
+          "Blue Mask": {
+               "bottomBoundary": {
+                    "value": [
+                         102,
+                         196,
+                         77
+                    ],
+                    "interface": true,
+                    "widget": "sliderList",
+                    "max": [
+                         179,
+                         255,
+                         255
+                    ],
+                    "min": [
+                         1,
+                         1,
+                         1
+                    ],
+                    "nameList": [
+                         "H",
+                         "S",
+                         "V"
+                    ]
+               },
+               "topBoundary": {
+                    "value": [
+                         114,
+                         255,
+                         255
+                    ],
+                    "interface": true,
+                    "widget": "sliderList",
+                    "max": [
+                         179,
+                         255,
+                         255
+                    ],
+                    "min": [
+                         1,
+                         1,
+                         1
+                    ],
+                    "nameList": [
+                         "H",
+                         "S",
+                         "V"
+                    ]
+               },
+               "erosion": {
+                    "value": 0,
+                    "interface": true,
+                    "widget": "slider",
+                    "max": 255,
+                    "min": 0
+               },
+               "dilation": {
+                    "value": 0,
+                    "interface": true,
+                    "widget": "slider",
+                    "max": 255,
+                    "min": 0
+               },
+               "blur": {
+                    "value": 11,
+                    "interface": true,
+                    "widget": "slider",
+                    "max": 255,
+                    "min": 0
+               },
+               "AreaTopBound": {
+                    "value": 2000,
+                    "interface": true,
+                    "widget": "slider",
+                    "max": 10000,
+                    "min": 0
+               },
+               "AreaBottomBound": {
+                    "value": 0,
+                    "interface": true,
+                    "widget": "slider",
+                    "max": 10000,
+                    "min": 0
+               },
+               "StrokeThikness": {
+                    "value": 2,
+                    "interface": false
+               },
+               "strokeRgb": {
+                    "value": [
+                         255,
+                         0,
+                         0
+                    ],
+                    "interface": false
+               },
+               "saveButton": {
+                    "interface": true,
+                    "widget": "button",
+                    "command": "saveobject"
+               }
+          }
+     }
+}

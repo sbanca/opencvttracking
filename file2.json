@@ -1,0 +1,106 @@
+{
+     "HSVMask": {
+          "Blue Mask": {
+               "bottomBoundary": {
+                    "value": [
+                         102,
+                         196,
+                         77
+                    ],
+                    "interface": true,
+                    "widget": "sliderList",
+                    "max": [
+                         179,
+                         255,
+                         255
+                    ],
+                    "min": [
+                         1,
+                         1,
+                         1
+                    ],
+                    "nameList": [
+                         "H",
+                         "S",
+                         "V"
+                    ]
+               },
+               "topBoundary": {
+                    "value": [
+                         114,
+                         255,
+                         255
+                    ],
+                    "interface": true,
+                    "widget": "sliderList",
+                    "max": [
+                         179,
+                         255,
+                         255
+                    ],
+                    "min": [
+                         1,
+                         1,
+                         1
+                    ],
+                    "nameList": [
+                         "H",
+                         "S",
+                         "V"
+                    ]
+               },
+               "erosion": {
+                    "value": 0,
+                    "interface": true,
+                    "widget": "slider",
+                    "max": 255,
+                    "min": 0
+               },
+               "dilation": {
+                    "value": 0,
+                    "interface": true,
+                    "widget": "slider",
+                    "max": 255,
+                    "min": 0
+               },
+               "blur": {
+                    "value": 11,
+                    "interface": true,
+                    "widget": "slider",
+                    "max": 255,
+                    "min": 0
+               },
+               "AreaTopBound": {
+                    "value": 8433,
+                    "interface": true,
+                    "widget": "slider",
+                    "max": 10000,
+                    "min": 0
+               },
+               "AreaBottomBound": {
+                    "value": 0,
+                    "interface": true,
+                    "widget": "slider",
+                    "max": 10000,
+                    "min": 0
+               },
+               "StrokeThikness": {
+                    "value": 2,
+                    "interface": false
+               },
+               "strokeRgb": {
+                    "value": [
+                         255,
+                         0,
+                         0
+                    ],
+                    "interface": false
+               },
+               "saveButton": {
+                    "interface": true,
+                    "widget": "button",
+                    "command": "saveobject"
+               }
+          }
+     }
+}

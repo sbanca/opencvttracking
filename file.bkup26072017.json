@@ -1,0 +1,2560 @@
+{
+     "HSVMask": {
+          "Blue Mask": {
+               "saveButton": {
+                    "interface": true,
+                    "widget": "button",
+                    "command": "saveobject"
+               },
+               "bottomBoundary": {
+                    "value": [
+                         106,
+                         136,
+                         77
+                    ],
+                    "interface": true,
+                    "widget": "sliderList",
+                    "max": [
+                         179,
+                         255,
+                         255
+                    ],
+                    "min": [
+                         1,
+                         1,
+                         1
+                    ],
+                    "nameList": [
+                         "H",
+                         "S",
+                         "V"
+                    ]
+               },
+               "topBoundary": {
+                    "value": [
+                         116,
+                         255,
+                         255
+                    ],
+                    "interface": true,
+                    "widget": "sliderList",
+                    "max": [
+                         179,
+                         255,
+                         255
+                    ],
+                    "min": [
+                         1,
+                         1,
+                         1
+                    ],
+                    "nameList": [
+                         "H",
+                         "S",
+                         "V"
+                    ]
+               },
+               "erosion": {
+                    "value": 0,
+                    "interface": true,
+                    "widget": "slider",
+                    "max": 255,
+                    "min": 0
+               },
+               "dilation": {
+                    "value": 0,
+                    "interface": true,
+                    "widget": "slider",
+                    "max": 255,
+                    "min": 0
+               },
+               "blur": {
+                    "value": 1,
+                    "interface": true,
+                    "widget": "slider",
+                    "max": 255,
+                    "min": 0
+               },
+               "minBBoxes": {
+                    "value": false,
+                    "interface": true,
+                    "widget": "button",
+                    "command": "toggleBoolean"
+               },
+               "drawMinBBoxes": {
+                    "value": true,
+                    "interface": true,
+                    "widget": "button",
+                    "command": "toggleBoolean"
+               },
+               "AreaTopBound": {
+                    "value": 1828,
+                    "interface": true,
+                    "widget": "slider",
+                    "max": 10000,
+                    "min": 0
+               },
+               "AreaBottomBound": {
+                    "value": 0,
+                    "interface": true,
+                    "widget": "slider",
+                    "max": 10000,
+                    "min": 0
+               },
+               "StrokeThikness": {
+                    "value": 1,
+                    "interface": false
+               },
+               "strokeRgb": {
+                    "value": [
+                         255,
+                         0,
+                         0
+                    ],
+                    "interface": false
+               },
+               "detect": {
+                    "value": true,
+                    "interface": true,
+                    "widget": "button",
+                    "command": "toggleBoolean"
+               },
+               "filterC": {
+                    "value": true,
+                    "interface": true,
+                    "widget": "button",
+                    "command": "toggleBoolean"
+               },
+               "Contours": {
+                    "value": false,
+                    "interface": true,
+                    "widget": "button",
+                    "command": "toggleBoolean"
+               },
+               "drawLabel": {
+                    "value": false,
+                    "interface": true,
+                    "widget": "button",
+                    "command": "toggleBoolean"
+               },
+               "trim": {
+                    "value": false,
+                    "interface": true,
+                    "widget": "button",
+                    "command": "toggleBoolean"
+               },
+               "boundingBoxIncrement": {
+                    "value": 1,
+                    "interface": true,
+                    "widget": "slider",
+                    "max": 30,
+                    "min": 1
+               },
+               "config": [
+                    "minBBoxes",
+                    "drawMinBBoxes",
+                    "config",
+                    "bottomBoundary",
+                    "topBoundary",
+                    "erosion",
+                    "dilation",
+                    "blur",
+                    "AreaTopBound",
+                    "AreaBottomBound",
+                    "StrokeThikness",
+                    "strokeRgb",
+                    "saveButton",
+                    "detect",
+                    "filterC",
+                    "Contours",
+                    "drawLabel",
+                    "trim",
+                    "boundingBoxIncrement",
+                    "speed"
+               ],
+               "speed": 1
+          },
+          "Red Mask": {
+               "saveButton": {
+                    "interface": true,
+                    "widget": "button",
+                    "command": "saveobject"
+               },
+               "bottomBoundary": {
+                    "value": [
+                         1,
+                         135,
+                         101
+                    ],
+                    "interface": true,
+                    "widget": "sliderList",
+                    "max": [
+                         179,
+                         255,
+                         255
+                    ],
+                    "min": [
+                         1,
+                         1,
+                         1
+                    ],
+                    "nameList": [
+                         "H",
+                         "S",
+                         "V"
+                    ]
+               },
+               "topBoundary": {
+                    "value": [
+                         12,
+                         255,
+                         255
+                    ],
+                    "interface": true,
+                    "widget": "sliderList",
+                    "max": [
+                         179,
+                         255,
+                         255
+                    ],
+                    "min": [
+                         1,
+                         1,
+                         1
+                    ],
+                    "nameList": [
+                         "H",
+                         "S",
+                         "V"
+                    ]
+               },
+               "erosion": {
+                    "value": 0,
+                    "interface": true,
+                    "widget": "slider",
+                    "max": 255,
+                    "min": 0
+               },
+               "dilation": {
+                    "value": 0,
+                    "interface": true,
+                    "widget": "slider",
+                    "max": 255,
+                    "min": 0
+               },
+               "blur": {
+                    "value": 1,
+                    "interface": true,
+                    "widget": "slider",
+                    "max": 255,
+                    "min": 0
+               },
+               "minBBoxes": {
+                    "value": false,
+                    "interface": true,
+                    "widget": "button",
+                    "command": "toggleBoolean"
+               },
+               "drawMinBBoxes": {
+                    "value": true,
+                    "interface": true,
+                    "widget": "button",
+                    "command": "toggleBoolean"
+               },
+               "AreaTopBound": {
+                    "value": 10000,
+                    "interface": true,
+                    "widget": "slider",
+                    "max": 10000,
+                    "min": 0
+               },
+               "AreaBottomBound": {
+                    "value": 75,
+                    "interface": true,
+                    "widget": "slider",
+                    "max": 10000,
+                    "min": 0
+               },
+               "StrokeThikness": {
+                    "value": 1,
+                    "interface": false
+               },
+               "strokeRgb": {
+                    "value": [
+                         0,
+                         0,
+                         255
+                    ],
+                    "interface": false
+               },
+               "detect": {
+                    "value": true,
+                    "interface": true,
+                    "widget": "button",
+                    "command": "toggleBoolean"
+               },
+               "filterC": {
+                    "value": true,
+                    "interface": true,
+                    "widget": "button",
+                    "command": "toggleBoolean"
+               },
+               "Contours": {
+                    "value": false,
+                    "interface": true,
+                    "widget": "button",
+                    "command": "toggleBoolean"
+               },
+               "drawLabel": {
+                    "value": false,
+                    "interface": true,
+                    "widget": "button",
+                    "command": "toggleBoolean"
+               },
+               "trim": {
+                    "value": false,
+                    "interface": true,
+                    "widget": "button",
+                    "command": "toggleBoolean"
+               },
+               "boundingBoxIncrement": {
+                    "value": 1,
+                    "interface": true,
+                    "widget": "slider",
+                    "max": 30,
+                    "min": 1
+               },
+               "config": [
+                    "saveButton",
+                    "bottomBoundary",
+                    "topBoundary",
+                    "erosion",
+                    "dilation",
+                    "blur",
+                    "minBBoxes",
+                    "drawMinBBoxes",
+                    "AreaTopBound",
+                    "AreaBottomBound",
+                    "StrokeThikness",
+                    "strokeRgb",
+                    "detect",
+                    "filterC",
+                    "Contours",
+                    "drawLabel",
+                    "trim",
+                    "boundingBoxIncrement",
+                    "config",
+                    "speed"
+               ],
+               "speed": 1
+          },
+          "Green Mask": {
+               "saveButton": {
+                    "interface": true,
+                    "widget": "button",
+                    "command": "saveobject"
+               },
+               "bottomBoundary": {
+                    "value": [
+                         54,
+                         78,
+                         92
+                    ],
+                    "interface": true,
+                    "widget": "sliderList",
+                    "max": [
+                         179,
+                         255,
+                         255
+                    ],
+                    "min": [
+                         1,
+                         1,
+                         1
+                    ],
+                    "nameList": [
+                         "H",
+                         "S",
+                         "V"
+                    ]
+               },
+               "topBoundary": {
+                    "value": [
+                         82,
+                         255,
+                         255
+                    ],
+                    "interface": true,
+                    "widget": "sliderList",
+                    "max": [
+                         179,
+                         255,
+                         255
+                    ],
+                    "min": [
+                         1,
+                         1,
+                         1
+                    ],
+                    "nameList": [
+                         "H",
+                         "S",
+                         "V"
+                    ]
+               },
+               "erosion": {
+                    "value": 0,
+                    "interface": true,
+                    "widget": "slider",
+                    "max": 255,
+                    "min": 0
+               },
+               "dilation": {
+                    "value": 0,
+                    "interface": true,
+                    "widget": "slider",
+                    "max": 255,
+                    "min": 0
+               },
+               "blur": {
+                    "value": 1,
+                    "interface": true,
+                    "widget": "slider",
+                    "max": 255,
+                    "min": 0
+               },
+               "minBBoxes": {
+                    "value": false,
+                    "interface": true,
+                    "widget": "button",
+                    "command": "toggleBoolean"
+               },
+               "drawMinBBoxes": {
+                    "value": true,
+                    "interface": true,
+                    "widget": "button",
+                    "command": "toggleBoolean"
+               },
+               "AreaTopBound": {
+                    "value": 1119,
+                    "interface": true,
+                    "widget": "slider",
+                    "max": 10000,
+                    "min": 0
+               },
+               "AreaBottomBound": {
+                    "value": 112,
+                    "interface": true,
+                    "widget": "slider",
+                    "max": 10000,
+                    "min": 0
+               },
+               "StrokeThikness": {
+                    "value": 1,
+                    "interface": false
+               },
+               "strokeRgb": {
+                    "value": [
+                         0,
+                         255,
+                         0
+                    ],
+                    "interface": false
+               },
+               "detect": {
+                    "value": true,
+                    "interface": true,
+                    "widget": "button",
+                    "command": "toggleBoolean"
+               },
+               "filterC": {
+                    "value": true,
+                    "interface": true,
+                    "widget": "button",
+                    "command": "toggleBoolean"
+               },
+               "Contours": {
+                    "value": false,
+                    "interface": true,
+                    "widget": "button",
+                    "command": "toggleBoolean"
+               },
+               "drawLabel": {
+                    "value": false,
+                    "interface": true,
+                    "widget": "button",
+                    "command": "toggleBoolean"
+               },
+               "trim": {
+                    "value": false,
+                    "interface": true,
+                    "widget": "button",
+                    "command": "toggleBoolean"
+               },
+               "boundingBoxIncrement": {
+                    "value": 1,
+                    "interface": true,
+                    "widget": "slider",
+                    "max": 30,
+                    "min": 1
+               },
+               "config": [
+                    "saveButton",
+                    "bottomBoundary",
+                    "topBoundary",
+                    "erosion",
+                    "dilation",
+                    "blur",
+                    "minBBoxes",
+                    "drawMinBBoxes",
+                    "AreaTopBound",
+                    "AreaBottomBound",
+                    "StrokeThikness",
+                    "strokeRgb",
+                    "detect",
+                    "filterC",
+                    "Contours",
+                    "drawLabel",
+                    "trim",
+                    "boundingBoxIncrement",
+                    "config",
+                    "speed"
+               ],
+               "speed": 1
+          },
+          "Yellow Mask": {
+               "saveButton": {
+                    "interface": true,
+                    "widget": "button",
+                    "command": "saveobject"
+               },
+               "bottomBoundary": {
+                    "value": [
+                         23,
+                         212,
+                         146
+                    ],
+                    "interface": true,
+                    "widget": "sliderList",
+                    "max": [
+                         179,
+                         255,
+                         255
+                    ],
+                    "min": [
+                         1,
+                         1,
+                         1
+                    ],
+                    "nameList": [
+                         "H",
+                         "S",
+                         "V"
+                    ]
+               },
+               "topBoundary": {
+                    "value": [
+                         27,
+                         255,
+                         255
+                    ],
+                    "interface": true,
+                    "widget": "sliderList",
+                    "max": [
+                         179,
+                         255,
+                         255
+                    ],
+                    "min": [
+                         1,
+                         1,
+                         1
+                    ],
+                    "nameList": [
+                         "H",
+                         "S",
+                         "V"
+                    ]
+               },
+               "erosion": {
+                    "value": 0,
+                    "interface": true,
+                    "widget": "slider",
+                    "max": 255,
+                    "min": 0
+               },
+               "dilation": {
+                    "value": 0,
+                    "interface": true,
+                    "widget": "slider",
+                    "max": 255,
+                    "min": 0
+               },
+               "blur": {
+                    "value": 1,
+                    "interface": true,
+                    "widget": "slider",
+                    "max": 255,
+                    "min": 0
+               },
+               "minBBoxes": {
+                    "value": false,
+                    "interface": true,
+                    "widget": "button",
+                    "command": "toggleBoolean"
+               },
+               "drawMinBBoxes": {
+                    "value": true,
+                    "interface": true,
+                    "widget": "button",
+                    "command": "toggleBoolean"
+               },
+               "AreaTopBound": {
+                    "value": 1231,
+                    "interface": true,
+                    "widget": "slider",
+                    "max": 10000,
+                    "min": 0
+               },
+               "AreaBottomBound": {
+                    "value": 75,
+                    "interface": true,
+                    "widget": "slider",
+                    "max": 10000,
+                    "min": 0
+               },
+               "StrokeThikness": {
+                    "value": 1,
+                    "interface": false
+               },
+               "strokeRgb": {
+                    "value": [
+                         0,
+                         255,
+                         255
+                    ],
+                    "interface": false
+               },
+               "detect": {
+                    "value": true,
+                    "interface": true,
+                    "widget": "button",
+                    "command": "toggleBoolean"
+               },
+               "filterC": {
+                    "value": true,
+                    "interface": true,
+                    "widget": "button",
+                    "command": "toggleBoolean"
+               },
+               "Contours": {
+                    "value": false,
+                    "interface": true,
+                    "widget": "button",
+                    "command": "toggleBoolean"
+               },
+               "drawLabel": {
+                    "value": false,
+                    "interface": true,
+                    "widget": "button",
+                    "command": "toggleBoolean"
+               },
+               "trim": {
+                    "value": false,
+                    "interface": true,
+                    "widget": "button",
+                    "command": "toggleBoolean"
+               },
+               "boundingBoxIncrement": {
+                    "value": 1,
+                    "interface": true,
+                    "widget": "slider",
+                    "max": 30,
+                    "min": 1
+               },
+               "config": [
+                    "saveButton",
+                    "bottomBoundary",
+                    "topBoundary",
+                    "erosion",
+                    "dilation",
+                    "blur",
+                    "minBBoxes",
+                    "drawMinBBoxes",
+                    "AreaTopBound",
+                    "AreaBottomBound",
+                    "StrokeThikness",
+                    "strokeRgb",
+                    "detect",
+                    "filterC",
+                    "Contours",
+                    "drawLabel",
+                    "trim",
+                    "boundingBoxIncrement",
+                    "config",
+                    "speed"
+               ],
+               "speed": 1
+          },
+          "Hand Mask": {
+               "bottomBoundary": {
+                    "value": [
+                         12,
+                         104,
+                         149
+                    ],
+                    "interface": true,
+                    "widget": "sliderList",
+                    "max": [
+                         179,
+                         255,
+                         255
+                    ],
+                    "min": [
+                         1,
+                         1,
+                         1
+                    ],
+                    "nameList": [
+                         "H",
+                         "S",
+                         "V"
+                    ]
+               },
+               "topBoundary": {
+                    "value": [
+                         22,
+                         143,
+                         196
+                    ],
+                    "interface": true,
+                    "widget": "sliderList",
+                    "max": [
+                         179,
+                         255,
+                         255
+                    ],
+                    "min": [
+                         1,
+                         1,
+                         1
+                    ],
+                    "nameList": [
+                         "H",
+                         "S",
+                         "V"
+                    ]
+               },
+               "erosion": {
+                    "value": 0,
+                    "interface": true,
+                    "widget": "slider",
+                    "max": 255,
+                    "min": 0
+               },
+               "dilation": {
+                    "value": 0,
+                    "interface": true,
+                    "widget": "slider",
+                    "max": 255,
+                    "min": 0
+               },
+               "blur": {
+                    "value": 21,
+                    "interface": true,
+                    "widget": "slider",
+                    "max": 255,
+                    "min": 0
+               },
+               "AreaTopBound": {
+                    "value": 1000000,
+                    "interface": true,
+                    "widget": "slider",
+                    "max": 1000000,
+                    "min": 0
+               },
+               "AreaBottomBound": {
+                    "value": 1194,
+                    "interface": true,
+                    "widget": "slider",
+                    "max": 10000,
+                    "min": 0
+               },
+               "StrokeThikness": {
+                    "value": 1,
+                    "interface": false
+               },
+               "strokeRgb": {
+                    "value": [
+                         0,
+                         255,
+                         255
+                    ],
+                    "interface": false
+               },
+               "saveButton": {
+                    "interface": true,
+                    "widget": "button",
+                    "command": "saveobject"
+               },
+               "detect": {
+                    "value": true,
+                    "interface": true,
+                    "widget": "button",
+                    "command": "toggleBoolean"
+               },
+               "filterC": {
+                    "value": true,
+                    "interface": true,
+                    "widget": "button",
+                    "command": "toggleBoolean"
+               },
+               "Contours": {
+                    "value": true,
+                    "interface": true,
+                    "widget": "button",
+                    "command": "toggleBoolean"
+               },
+               "drawLabel": {
+                    "value": false,
+                    "interface": true,
+                    "widget": "button",
+                    "command": "toggleBoolean"
+               },
+               "trim": {
+                    "value": false,
+                    "interface": true,
+                    "widget": "button",
+                    "command": "toggleBoolean"
+               },
+               "boundingBoxIncrement": {
+                    "value": 1,
+                    "interface": true,
+                    "widget": "slider",
+                    "max": 30,
+                    "min": 1
+               },
+               "speed": 1
+          }
+     },
+     "trimmer": {
+          "Trim2": {
+               "saveButton": {
+                    "interface": true,
+                    "widget": "button",
+                    "command": "saveobject"
+               },
+               "warpToggle": {
+                    "value": true,
+                    "interface": true,
+                    "widget": "button",
+                    "command": "toggleBoolean"
+               },
+               "resizeValue": {
+                    "value": [
+                         621,
+                         242
+                    ],
+                    "interface": true,
+                    "widget": "sliderList",
+                    "max": [
+                         640,
+                         480
+                    ],
+                    "min": [
+                         0,
+                         0
+                    ],
+                    "nameList": [
+                         "X",
+                         "Y"
+                    ]
+               },
+               "resizeToggle": {
+                    "value": true,
+                    "interface": true,
+                    "widget": "button",
+                    "command": "toggleBoolean"
+               },
+               "topLeft": {
+                    "value": [
+                         93,
+                         81
+                    ],
+                    "interface": true,
+                    "widget": "sliderList",
+                    "max": [
+                         640,
+                         480
+                    ],
+                    "min": [
+                         0,
+                         0
+                    ],
+                    "nameList": [
+                         "X",
+                         "Y"
+                    ]
+               },
+               "topRight": {
+                    "value": [
+                         556,
+                         66
+                    ],
+                    "interface": true,
+                    "widget": "sliderList",
+                    "max": [
+                         640,
+                         480
+                    ],
+                    "min": [
+                         0,
+                         0
+                    ],
+                    "nameList": [
+                         "X",
+                         "Y"
+                    ]
+               },
+               "bottomLeft": {
+                    "value": [
+                         88,
+                         260
+                    ],
+                    "interface": true,
+                    "widget": "sliderList",
+                    "max": [
+                         640,
+                         480
+                    ],
+                    "min": [
+                         0,
+                         0
+                    ],
+                    "nameList": [
+                         "X",
+                         "Y"
+                    ]
+               },
+               "bottomRight": {
+                    "value": [
+                         568,
+                         249
+                    ],
+                    "interface": true,
+                    "widget": "sliderList",
+                    "max": [
+                         640,
+                         480
+                    ],
+                    "min": [
+                         0,
+                         0
+                    ],
+                    "nameList": [
+                         "X",
+                         "Y"
+                    ]
+               },
+               "config": [
+                    "saveButton",
+                    "warpToggle",
+                    "resizeValue",
+                    "resizeToggle",
+                    "topLeft",
+                    "topRight",
+                    "bottomLeft",
+                    "bottomRight",
+                    "config",
+                    "speed"
+               ],
+               "speed": 1
+          },
+          "Trim": {
+               "saveButton": {
+                    "interface": true,
+                    "widget": "button",
+                    "command": "saveobject"
+               },
+               "warpToggle": {
+                    "value": true,
+                    "interface": true,
+                    "widget": "button",
+                    "command": "toggleBoolean"
+               },
+               "resizeValue": {
+                    "value": [
+                         621,
+                         195
+                    ],
+                    "interface": true,
+                    "widget": "sliderList",
+                    "max": [
+                         640,
+                         480
+                    ],
+                    "min": [
+                         0,
+                         0
+                    ],
+                    "nameList": [
+                         "X",
+                         "Y"
+                    ]
+               },
+               "resizeToggle": {
+                    "value": true,
+                    "interface": true,
+                    "widget": "button",
+                    "command": "toggleBoolean"
+               },
+               "topLeft": {
+                    "value": [
+                         88,
+                         261
+                    ],
+                    "interface": true,
+                    "widget": "sliderList",
+                    "max": [
+                         640,
+                         480
+                    ],
+                    "min": [
+                         0,
+                         0
+                    ],
+                    "nameList": [
+                         "X",
+                         "Y"
+                    ]
+               },
+               "topRight": {
+                    "value": [
+                         568,
+                         249
+                    ],
+                    "interface": true,
+                    "widget": "sliderList",
+                    "max": [
+                         640,
+                         480
+                    ],
+                    "min": [
+                         0,
+                         0
+                    ],
+                    "nameList": [
+                         "X",
+                         "Y"
+                    ]
+               },
+               "bottomLeft": {
+                    "value": [
+                         86,
+                         414
+                    ],
+                    "interface": true,
+                    "widget": "sliderList",
+                    "max": [
+                         640,
+                         480
+                    ],
+                    "min": [
+                         0,
+                         0
+                    ],
+                    "nameList": [
+                         "X",
+                         "Y"
+                    ]
+               },
+               "bottomRight": {
+                    "value": [
+                         578,
+                         403
+                    ],
+                    "interface": true,
+                    "widget": "sliderList",
+                    "max": [
+                         640,
+                         480
+                    ],
+                    "min": [
+                         0,
+                         0
+                    ],
+                    "nameList": [
+                         "X",
+                         "Y"
+                    ]
+               },
+               "config": [
+                    "saveButton",
+                    "warpToggle",
+                    "resizeValue",
+                    "resizeToggle",
+                    "topLeft",
+                    "topRight",
+                    "bottomLeft",
+                    "bottomRight",
+                    "config",
+                    "speed"
+               ],
+               "speed": 1
+          }
+     },
+     "BackSub": {
+          "BckSub": {
+               "saveButton": {
+                    "interface": true,
+                    "widget": "button",
+                    "command": "saveobject"
+               },
+               "bckSub": {
+                    "value": true,
+                    "interface": true,
+                    "widget": "button",
+                    "command": "toggleBoolean"
+               },
+               "config": [
+                    "saveButton",
+                    "bckSub"
+               ],
+               "speed": 1
+          }
+     },
+     "binbox": {
+          "first": {
+               "saveButton": {
+                    "interface": true,
+                    "widget": "button",
+                    "command": "saveobject"
+               },
+               "topLeft": {
+                    "value": [
+                         88,
+                         13
+                    ],
+                    "interface": true,
+                    "widget": "sliderList",
+                    "max": [
+                         640,
+                         480
+                    ],
+                    "min": [
+                         0,
+                         0
+                    ],
+                    "nameList": [
+                         "X",
+                         "Y"
+                    ]
+               },
+               "topRight": {
+                    "value": [
+                         158,
+                         13
+                    ],
+                    "interface": true,
+                    "widget": "sliderList",
+                    "max": [
+                         640,
+                         480
+                    ],
+                    "min": [
+                         0,
+                         0
+                    ],
+                    "nameList": [
+                         "X",
+                         "Y"
+                    ]
+               },
+               "bottomLeft": {
+                    "value": [
+                         88,
+                         95
+                    ],
+                    "interface": true,
+                    "widget": "sliderList",
+                    "max": [
+                         640,
+                         480
+                    ],
+                    "min": [
+                         0,
+                         0
+                    ],
+                    "nameList": [
+                         "X",
+                         "Y"
+                    ]
+               },
+               "bottomRight": {
+                    "value": [
+                         158,
+                         95
+                    ],
+                    "interface": true,
+                    "widget": "sliderList",
+                    "max": [
+                         640,
+                         480
+                    ],
+                    "min": [
+                         0,
+                         0
+                    ],
+                    "nameList": [
+                         "X",
+                         "Y"
+                    ]
+               },
+               "config": [
+                    "saveButton",
+                    "topLeft",
+                    "topRight",
+                    "bottomLeft",
+                    "bottomRight",
+                    "speed"
+               ],
+               "speed": 1
+          },
+          "second": {
+               "saveButton": {
+                    "interface": true,
+                    "widget": "button",
+                    "command": "saveobject"
+               },
+               "topLeft": {
+                    "value": [
+                         229,
+                         14
+                    ],
+                    "interface": true,
+                    "widget": "sliderList",
+                    "max": [
+                         640,
+                         480
+                    ],
+                    "min": [
+                         0,
+                         0
+                    ],
+                    "nameList": [
+                         "X",
+                         "Y"
+                    ]
+               },
+               "topRight": {
+                    "value": [
+                         162,
+                         14
+                    ],
+                    "interface": true,
+                    "widget": "sliderList",
+                    "max": [
+                         640,
+                         480
+                    ],
+                    "min": [
+                         0,
+                         0
+                    ],
+                    "nameList": [
+                         "X",
+                         "Y"
+                    ]
+               },
+               "bottomLeft": {
+                    "value": [
+                         229,
+                         95
+                    ],
+                    "interface": true,
+                    "widget": "sliderList",
+                    "max": [
+                         640,
+                         480
+                    ],
+                    "min": [
+                         0,
+                         0
+                    ],
+                    "nameList": [
+                         "X",
+                         "Y"
+                    ]
+               },
+               "bottomRight": {
+                    "value": [
+                         162,
+                         95
+                    ],
+                    "interface": true,
+                    "widget": "sliderList",
+                    "max": [
+                         640,
+                         480
+                    ],
+                    "min": [
+                         0,
+                         0
+                    ],
+                    "nameList": [
+                         "X",
+                         "Y"
+                    ]
+               },
+               "speed": 1
+          },
+          "third": {
+               "saveButton": {
+                    "interface": true,
+                    "widget": "button",
+                    "command": "saveobject"
+               },
+               "topLeft": {
+                    "value": [
+                         239,
+                         14
+                    ],
+                    "interface": true,
+                    "widget": "sliderList",
+                    "max": [
+                         640,
+                         480
+                    ],
+                    "min": [
+                         0,
+                         0
+                    ],
+                    "nameList": [
+                         "X",
+                         "Y"
+                    ]
+               },
+               "topRight": {
+                    "value": [
+                         306,
+                         14
+                    ],
+                    "interface": true,
+                    "widget": "sliderList",
+                    "max": [
+                         640,
+                         480
+                    ],
+                    "min": [
+                         0,
+                         0
+                    ],
+                    "nameList": [
+                         "X",
+                         "Y"
+                    ]
+               },
+               "bottomLeft": {
+                    "value": [
+                         239,
+                         95
+                    ],
+                    "interface": true,
+                    "widget": "sliderList",
+                    "max": [
+                         640,
+                         480
+                    ],
+                    "min": [
+                         0,
+                         0
+                    ],
+                    "nameList": [
+                         "X",
+                         "Y"
+                    ]
+               },
+               "bottomRight": {
+                    "value": [
+                         306,
+                         95
+                    ],
+                    "interface": true,
+                    "widget": "sliderList",
+                    "max": [
+                         640,
+                         480
+                    ],
+                    "min": [
+                         0,
+                         0
+                    ],
+                    "nameList": [
+                         "X",
+                         "Y"
+                    ]
+               },
+               "speed": 1
+          },
+          "fourth": {
+               "saveButton": {
+                    "interface": true,
+                    "widget": "button",
+                    "command": "saveobject"
+               },
+               "topLeft": {
+                    "value": [
+                         313,
+                         13
+                    ],
+                    "interface": true,
+                    "widget": "sliderList",
+                    "max": [
+                         640,
+                         480
+                    ],
+                    "min": [
+                         0,
+                         0
+                    ],
+                    "nameList": [
+                         "X",
+                         "Y"
+                    ]
+               },
+               "topRight": {
+                    "value": [
+                         384,
+                         13
+                    ],
+                    "interface": true,
+                    "widget": "sliderList",
+                    "max": [
+                         640,
+                         480
+                    ],
+                    "min": [
+                         0,
+                         0
+                    ],
+                    "nameList": [
+                         "X",
+                         "Y"
+                    ]
+               },
+               "bottomLeft": {
+                    "value": [
+                         313,
+                         95
+                    ],
+                    "interface": true,
+                    "widget": "sliderList",
+                    "max": [
+                         640,
+                         480
+                    ],
+                    "min": [
+                         0,
+                         0
+                    ],
+                    "nameList": [
+                         "X",
+                         "Y"
+                    ]
+               },
+               "bottomRight": {
+                    "value": [
+                         384,
+                         95
+                    ],
+                    "interface": true,
+                    "widget": "sliderList",
+                    "max": [
+                         640,
+                         480
+                    ],
+                    "min": [
+                         0,
+                         0
+                    ],
+                    "nameList": [
+                         "X",
+                         "Y"
+                    ]
+               },
+               "speed": 1
+          },
+          "fifth": {
+               "saveButton": {
+                    "interface": true,
+                    "widget": "button",
+                    "command": "saveobject"
+               },
+               "topLeft": {
+                    "value": [
+                         389,
+                         13
+                    ],
+                    "interface": true,
+                    "widget": "sliderList",
+                    "max": [
+                         640,
+                         480
+                    ],
+                    "min": [
+                         0,
+                         0
+                    ],
+                    "nameList": [
+                         "X",
+                         "Y"
+                    ]
+               },
+               "topRight": {
+                    "value": [
+                         461,
+                         13
+                    ],
+                    "interface": true,
+                    "widget": "sliderList",
+                    "max": [
+                         640,
+                         480
+                    ],
+                    "min": [
+                         0,
+                         0
+                    ],
+                    "nameList": [
+                         "X",
+                         "Y"
+                    ]
+               },
+               "bottomLeft": {
+                    "value": [
+                         389,
+                         95
+                    ],
+                    "interface": true,
+                    "widget": "sliderList",
+                    "max": [
+                         640,
+                         480
+                    ],
+                    "min": [
+                         0,
+                         0
+                    ],
+                    "nameList": [
+                         "X",
+                         "Y"
+                    ]
+               },
+               "bottomRight": {
+                    "value": [
+                         461,
+                         95
+                    ],
+                    "interface": true,
+                    "widget": "sliderList",
+                    "max": [
+                         640,
+                         480
+                    ],
+                    "min": [
+                         0,
+                         0
+                    ],
+                    "nameList": [
+                         "X",
+                         "Y"
+                    ]
+               },
+               "speed": 1
+          },
+          "sixth": {
+               "saveButton": {
+                    "interface": true,
+                    "widget": "button",
+                    "command": "saveobject"
+               },
+               "topLeft": {
+                    "value": [
+                         466,
+                         10
+                    ],
+                    "interface": true,
+                    "widget": "sliderList",
+                    "max": [
+                         640,
+                         480
+                    ],
+                    "min": [
+                         0,
+                         0
+                    ],
+                    "nameList": [
+                         "X",
+                         "Y"
+                    ]
+               },
+               "topRight": {
+                    "value": [
+                         535,
+                         10
+                    ],
+                    "interface": true,
+                    "widget": "sliderList",
+                    "max": [
+                         640,
+                         480
+                    ],
+                    "min": [
+                         0,
+                         0
+                    ],
+                    "nameList": [
+                         "X",
+                         "Y"
+                    ]
+               },
+               "bottomLeft": {
+                    "value": [
+                         466,
+                         97
+                    ],
+                    "interface": true,
+                    "widget": "sliderList",
+                    "max": [
+                         640,
+                         480
+                    ],
+                    "min": [
+                         0,
+                         0
+                    ],
+                    "nameList": [
+                         "X",
+                         "Y"
+                    ]
+               },
+               "bottomRight": {
+                    "value": [
+                         535,
+                         97
+                    ],
+                    "interface": true,
+                    "widget": "sliderList",
+                    "max": [
+                         640,
+                         480
+                    ],
+                    "min": [
+                         0,
+                         0
+                    ],
+                    "nameList": [
+                         "X",
+                         "Y"
+                    ]
+               },
+               "speed": 1
+          },
+          "seventh": {
+               "saveButton": {
+                    "interface": true,
+                    "widget": "button",
+                    "command": "saveobject"
+               },
+               "topLeft": {
+                    "value": [
+                         466,
+                         100
+                    ],
+                    "interface": true,
+                    "widget": "sliderList",
+                    "max": [
+                         640,
+                         480
+                    ],
+                    "min": [
+                         0,
+                         0
+                    ],
+                    "nameList": [
+                         "X",
+                         "Y"
+                    ]
+               },
+               "topRight": {
+                    "value": [
+                         533,
+                         100
+                    ],
+                    "interface": true,
+                    "widget": "sliderList",
+                    "max": [
+                         640,
+                         480
+                    ],
+                    "min": [
+                         0,
+                         0
+                    ],
+                    "nameList": [
+                         "X",
+                         "Y"
+                    ]
+               },
+               "bottomLeft": {
+                    "value": [
+                         466,
+                         181
+                    ],
+                    "interface": true,
+                    "widget": "sliderList",
+                    "max": [
+                         640,
+                         480
+                    ],
+                    "min": [
+                         0,
+                         0
+                    ],
+                    "nameList": [
+                         "X",
+                         "Y"
+                    ]
+               },
+               "bottomRight": {
+                    "value": [
+                         533,
+                         181
+                    ],
+                    "interface": true,
+                    "widget": "sliderList",
+                    "max": [
+                         640,
+                         480
+                    ],
+                    "min": [
+                         0,
+                         0
+                    ],
+                    "nameList": [
+                         "X",
+                         "Y"
+                    ]
+               },
+               "speed": 1
+          },
+          "eight": {
+               "saveButton": {
+                    "interface": true,
+                    "widget": "button",
+                    "command": "saveobject"
+               },
+               "topLeft": {
+                    "value": [
+                         389,
+                         99
+                    ],
+                    "interface": true,
+                    "widget": "sliderList",
+                    "max": [
+                         640,
+                         480
+                    ],
+                    "min": [
+                         0,
+                         0
+                    ],
+                    "nameList": [
+                         "X",
+                         "Y"
+                    ]
+               },
+               "topRight": {
+                    "value": [
+                         461,
+                         99
+                    ],
+                    "interface": true,
+                    "widget": "sliderList",
+                    "max": [
+                         640,
+                         480
+                    ],
+                    "min": [
+                         0,
+                         0
+                    ],
+                    "nameList": [
+                         "X",
+                         "Y"
+                    ]
+               },
+               "bottomLeft": {
+                    "value": [
+                         389,
+                         183
+                    ],
+                    "interface": true,
+                    "widget": "sliderList",
+                    "max": [
+                         640,
+                         480
+                    ],
+                    "min": [
+                         0,
+                         0
+                    ],
+                    "nameList": [
+                         "X",
+                         "Y"
+                    ]
+               },
+               "bottomRight": {
+                    "value": [
+                         461,
+                         183
+                    ],
+                    "interface": true,
+                    "widget": "sliderList",
+                    "max": [
+                         640,
+                         480
+                    ],
+                    "min": [
+                         0,
+                         0
+                    ],
+                    "nameList": [
+                         "X",
+                         "Y"
+                    ]
+               },
+               "speed": 1
+          },
+          "nineth": {
+               "saveButton": {
+                    "interface": true,
+                    "widget": "button",
+                    "command": "saveobject"
+               },
+               "topLeft": {
+                    "value": [
+                         315,
+                         100
+                    ],
+                    "interface": true,
+                    "widget": "sliderList",
+                    "max": [
+                         640,
+                         480
+                    ],
+                    "min": [
+                         0,
+                         0
+                    ],
+                    "nameList": [
+                         "X",
+                         "Y"
+                    ]
+               },
+               "topRight": {
+                    "value": [
+                         382,
+                         100
+                    ],
+                    "interface": true,
+                    "widget": "sliderList",
+                    "max": [
+                         640,
+                         480
+                    ],
+                    "min": [
+                         0,
+                         0
+                    ],
+                    "nameList": [
+                         "X",
+                         "Y"
+                    ]
+               },
+               "bottomLeft": {
+                    "value": [
+                         315,
+                         181
+                    ],
+                    "interface": true,
+                    "widget": "sliderList",
+                    "max": [
+                         640,
+                         480
+                    ],
+                    "min": [
+                         0,
+                         0
+                    ],
+                    "nameList": [
+                         "X",
+                         "Y"
+                    ]
+               },
+               "bottomRight": {
+                    "value": [
+                         382,
+                         181
+                    ],
+                    "interface": true,
+                    "widget": "sliderList",
+                    "max": [
+                         640,
+                         480
+                    ],
+                    "min": [
+                         0,
+                         0
+                    ],
+                    "nameList": [
+                         "X",
+                         "Y"
+                    ]
+               },
+               "speed": 1
+          },
+          "tenth": {
+               "saveButton": {
+                    "interface": true,
+                    "widget": "button",
+                    "command": "saveobject"
+               },
+               "topLeft": {
+                    "value": [
+                         239,
+                         102
+                    ],
+                    "interface": true,
+                    "widget": "sliderList",
+                    "max": [
+                         640,
+                         480
+                    ],
+                    "min": [
+                         0,
+                         0
+                    ],
+                    "nameList": [
+                         "X",
+                         "Y"
+                    ]
+               },
+               "topRight": {
+                    "value": [
+                         306,
+                         102
+                    ],
+                    "interface": true,
+                    "widget": "sliderList",
+                    "max": [
+                         640,
+                         480
+                    ],
+                    "min": [
+                         0,
+                         0
+                    ],
+                    "nameList": [
+                         "X",
+                         "Y"
+                    ]
+               },
+               "bottomLeft": {
+                    "value": [
+                         239,
+                         179
+                    ],
+                    "interface": true,
+                    "widget": "sliderList",
+                    "max": [
+                         640,
+                         480
+                    ],
+                    "min": [
+                         0,
+                         0
+                    ],
+                    "nameList": [
+                         "X",
+                         "Y"
+                    ]
+               },
+               "bottomRight": {
+                    "value": [
+                         306,
+                         179
+                    ],
+                    "interface": true,
+                    "widget": "sliderList",
+                    "max": [
+                         640,
+                         480
+                    ],
+                    "min": [
+                         0,
+                         0
+                    ],
+                    "nameList": [
+                         "X",
+                         "Y"
+                    ]
+               },
+               "speed": 1
+          },
+          "eleventh": {
+               "saveButton": {
+                    "interface": true,
+                    "widget": "button",
+                    "command": "saveobject"
+               },
+               "topLeft": {
+                    "value": [
+                         165,
+                         102
+                    ],
+                    "interface": true,
+                    "widget": "sliderList",
+                    "max": [
+                         640,
+                         480
+                    ],
+                    "min": [
+                         0,
+                         0
+                    ],
+                    "nameList": [
+                         "X",
+                         "Y"
+                    ]
+               },
+               "topRight": {
+                    "value": [
+                         229,
+                         102
+                    ],
+                    "interface": true,
+                    "widget": "sliderList",
+                    "max": [
+                         640,
+                         480
+                    ],
+                    "min": [
+                         0,
+                         0
+                    ],
+                    "nameList": [
+                         "X",
+                         "Y"
+                    ]
+               },
+               "bottomLeft": {
+                    "value": [
+                         165,
+                         181
+                    ],
+                    "interface": true,
+                    "widget": "sliderList",
+                    "max": [
+                         640,
+                         480
+                    ],
+                    "min": [
+                         0,
+                         0
+                    ],
+                    "nameList": [
+                         "X",
+                         "Y"
+                    ]
+               },
+               "bottomRight": {
+                    "value": [
+                         229,
+                         181
+                    ],
+                    "interface": true,
+                    "widget": "sliderList",
+                    "max": [
+                         640,
+                         480
+                    ],
+                    "min": [
+                         0,
+                         0
+                    ],
+                    "nameList": [
+                         "X",
+                         "Y"
+                    ]
+               },
+               "speed": 1
+          },
+          "twelveth": {
+               "saveButton": {
+                    "interface": true,
+                    "widget": "button",
+                    "command": "saveobject"
+               },
+               "topLeft": {
+                    "value": [
+                         88,
+                         102
+                    ],
+                    "interface": true,
+                    "widget": "sliderList",
+                    "max": [
+                         640,
+                         480
+                    ],
+                    "min": [
+                         0,
+                         0
+                    ],
+                    "nameList": [
+                         "X",
+                         "Y"
+                    ]
+               },
+               "topRight": {
+                    "value": [
+                         155,
+                         102
+                    ],
+                    "interface": true,
+                    "widget": "sliderList",
+                    "max": [
+                         640,
+                         480
+                    ],
+                    "min": [
+                         0,
+                         0
+                    ],
+                    "nameList": [
+                         "X",
+                         "Y"
+                    ]
+               },
+               "bottomLeft": {
+                    "value": [
+                         88,
+                         181
+                    ],
+                    "interface": true,
+                    "widget": "sliderList",
+                    "max": [
+                         640,
+                         480
+                    ],
+                    "min": [
+                         0,
+                         0
+                    ],
+                    "nameList": [
+                         "X",
+                         "Y"
+                    ]
+               },
+               "bottomRight": {
+                    "value": [
+                         155,
+                         181
+                    ],
+                    "interface": true,
+                    "widget": "sliderList",
+                    "max": [
+                         640,
+                         480
+                    ],
+                    "min": [
+                         0,
+                         0
+                    ],
+                    "nameList": [
+                         "X",
+                         "Y"
+                    ]
+               },
+               "config": [
+                    "saveButton",
+                    "topLeft",
+                    "topRight",
+                    "bottomLeft",
+                    "bottomRight",
+                    "speed"
+               ],
+               "speed": 1
+          },
+          "areaSecond": {
+               "saveButton": {
+                    "interface": true,
+                    "widget": "button",
+                    "command": "saveobject"
+               },
+               "topLeft": {
+                    "value": [
+                         306,
+                         0
+                    ],
+                    "interface": true,
+                    "widget": "sliderList",
+                    "max": [
+                         640,
+                         480
+                    ],
+                    "min": [
+                         0,
+                         0
+                    ],
+                    "nameList": [
+                         "X",
+                         "Y"
+                    ]
+               },
+               "topRight": {
+                    "value": [
+                         640,
+                         0
+                    ],
+                    "interface": true,
+                    "widget": "sliderList",
+                    "max": [
+                         640,
+                         480
+                    ],
+                    "min": [
+                         0,
+                         0
+                    ],
+                    "nameList": [
+                         "X",
+                         "Y"
+                    ]
+               },
+               "bottomLeft": {
+                    "value": [
+                         306,
+                         116
+                    ],
+                    "interface": true,
+                    "widget": "sliderList",
+                    "max": [
+                         640,
+                         480
+                    ],
+                    "min": [
+                         0,
+                         0
+                    ],
+                    "nameList": [
+                         "X",
+                         "Y"
+                    ]
+               },
+               "bottomRight": {
+                    "value": [
+                         640,
+                         116
+                    ],
+                    "interface": true,
+                    "widget": "sliderList",
+                    "max": [
+                         640,
+                         480
+                    ],
+                    "min": [
+                         0,
+                         0
+                    ],
+                    "nameList": [
+                         "X",
+                         "Y"
+                    ]
+               },
+               "speed": 1
+          },
+          "areaFirst": {
+               "saveButton": {
+                    "interface": true,
+                    "widget": "button",
+                    "command": "saveobject"
+               },
+               "topLeft": {
+                    "value": [
+                         0,
+                         0
+                    ],
+                    "interface": true,
+                    "widget": "sliderList",
+                    "max": [
+                         640,
+                         480
+                    ],
+                    "min": [
+                         0,
+                         0
+                    ],
+                    "nameList": [
+                         "X",
+                         "Y"
+                    ]
+               },
+               "topRight": {
+                    "value": [
+                         306,
+                         0
+                    ],
+                    "interface": true,
+                    "widget": "sliderList",
+                    "max": [
+                         640,
+                         480
+                    ],
+                    "min": [
+                         0,
+                         0
+                    ],
+                    "nameList": [
+                         "X",
+                         "Y"
+                    ]
+               },
+               "bottomLeft": {
+                    "value": [
+                         0,
+                         116
+                    ],
+                    "interface": true,
+                    "widget": "sliderList",
+                    "max": [
+                         640,
+                         480
+                    ],
+                    "min": [
+                         0,
+                         0
+                    ],
+                    "nameList": [
+                         "X",
+                         "Y"
+                    ]
+               },
+               "bottomRight": {
+                    "value": [
+                         306,
+                         116
+                    ],
+                    "interface": true,
+                    "widget": "sliderList",
+                    "max": [
+                         640,
+                         480
+                    ],
+                    "min": [
+                         0,
+                         0
+                    ],
+                    "nameList": [
+                         "X",
+                         "Y"
+                    ]
+               },
+               "speed": 31
+          },
+          "areaThird": {
+               "saveButton": {
+                    "interface": true,
+                    "widget": "button",
+                    "command": "saveobject"
+               },
+               "topLeft": {
+                    "value": [
+                         306,
+                         116
+                    ],
+                    "interface": true,
+                    "widget": "sliderList",
+                    "max": [
+                         640,
+                         480
+                    ],
+                    "min": [
+                         0,
+                         0
+                    ],
+                    "nameList": [
+                         "X",
+                         "Y"
+                    ]
+               },
+               "topRight": {
+                    "value": [
+                         640,
+                         116
+                    ],
+                    "interface": true,
+                    "widget": "sliderList",
+                    "max": [
+                         640,
+                         480
+                    ],
+                    "min": [
+                         0,
+                         0
+                    ],
+                    "nameList": [
+                         "X",
+                         "Y"
+                    ]
+               },
+               "bottomLeft": {
+                    "value": [
+                         306,
+                         227
+                    ],
+                    "interface": true,
+                    "widget": "sliderList",
+                    "max": [
+                         640,
+                         480
+                    ],
+                    "min": [
+                         0,
+                         0
+                    ],
+                    "nameList": [
+                         "X",
+                         "Y"
+                    ]
+               },
+               "bottomRight": {
+                    "value": [
+                         640,
+                         227
+                    ],
+                    "interface": true,
+                    "widget": "sliderList",
+                    "max": [
+                         640,
+                         480
+                    ],
+                    "min": [
+                         0,
+                         0
+                    ],
+                    "nameList": [
+                         "X",
+                         "Y"
+                    ]
+               },
+               "speed": 16
+          },
+          "areaFourth": {
+               "saveButton": {
+                    "interface": true,
+                    "widget": "button",
+                    "command": "saveobject"
+               },
+               "topLeft": {
+                    "value": [
+                         0,
+                         116
+                    ],
+                    "interface": true,
+                    "widget": "sliderList",
+                    "max": [
+                         640,
+                         480
+                    ],
+                    "min": [
+                         0,
+                         0
+                    ],
+                    "nameList": [
+                         "X",
+                         "Y"
+                    ]
+               },
+               "topRight": {
+                    "value": [
+                         306,
+                         116
+                    ],
+                    "interface": true,
+                    "widget": "sliderList",
+                    "max": [
+                         640,
+                         480
+                    ],
+                    "min": [
+                         0,
+                         0
+                    ],
+                    "nameList": [
+                         "X",
+                         "Y"
+                    ]
+               },
+               "bottomLeft": {
+                    "value": [
+                         0,
+                         227
+                    ],
+                    "interface": true,
+                    "widget": "sliderList",
+                    "max": [
+                         640,
+                         480
+                    ],
+                    "min": [
+                         0,
+                         0
+                    ],
+                    "nameList": [
+                         "X",
+                         "Y"
+                    ]
+               },
+               "bottomRight": {
+                    "value": [
+                         306,
+                         227
+                    ],
+                    "interface": true,
+                    "widget": "sliderList",
+                    "max": [
+                         640,
+                         480
+                    ],
+                    "min": [
+                         0,
+                         0
+                    ],
+                    "nameList": [
+                         "X",
+                         "Y"
+                    ]
+               },
+               "config": [
+                    "saveButton",
+                    "topLeft",
+                    "topRight",
+                    "bottomLeft",
+                    "bottomRight",
+                    "speed"
+               ],
+               "speed": 1
+          }
+     }
+}
