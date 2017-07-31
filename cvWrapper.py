@@ -383,6 +383,7 @@ class binbox(base,object):
         self.dict['bottomLeft'] = {'value':[10,20],'interface':True,'widget':'sliderList','max':[640,480],'min':[0,0],'nameList':['X','Y']}
         self.dict['bottomRight'] = {'value':[20,20],'interface':True,'widget':'sliderList','max':[640,480],'min':[0,0],'nameList':['X','Y']}
 
+
     def render(self,frame):
         
         self.frame = frame
@@ -406,10 +407,30 @@ class blocks(base,object):
         self.notSave = self.notSave = ['kind','name']
         self.dict['kind'] = 'blocks'
         self.dict['ROI'] ={'center':[],'box':[],'name':[],'movement':[],'hand':[]}
+        self.dict['contours']={'contours':[],'color':[],'type':[],'boundingBox':[],'minBoundingBox':[],'areas':[],'ROI':[],'center':[]}
         self.dict['input'] = []
         self.dict['detctRepr'] = []
         self.dict['persRepr'] = []
         self.dict['BlockProp'] = ['id','boundingBox','minBoundingBox','center','color','size','positionXY','positionROI']     
+        self.dict['AreaTopBound'] = {'value':2000,'interface':True,'widget':'slider','max':10000,'min':0}
+        self.dict['AreaBottomBound']={'value':128,'interface':True,'widget':'slider','max':10000,'min':0}
+        self.dict['2x1'] = {'value':427,'interface':True,'widget':'slider','max':10000,'min':0}
+        self.dict['2x2'] = {'value':940,'interface':True,'widget':'slider','max':10000,'min':0}
+        self.dict['2x4'] = {'value':1368,'interface':True,'widget':'slider','max':10000,'min':0}
+
+    def addContours(self,contours,color):
+        
+        for idx,cnt in enumerate(contours):
+            try:
+                M = cv2.moments(cnt)
+                cX = int(M["m10"] / M["m00"])
+                cY = int(M["m01"] / M["m00"])
+                self.dict['contours']['center'].append((cX-10,cY+10))
+            except Exception:
+                self.dict['contours']['center'].append((0,0))           
+
+            self.dict['contours']['contours'].append(cnt)
+            self.dict['contours']['color'].append(color)
 
     def addROI(self,dictionary):
         
@@ -438,6 +459,16 @@ class blocks(base,object):
             else: rgb = (255,255,255)
             cv2.drawContours(frame,[ROI],0,rgb,1)
             cv2.putText(frame, self.dict['ROI']['name'][idx] ,self.dict['ROI']['center'][idx], cv2.FONT_HERSHEY_SIMPLEX, 0.35, rgb, 1)
+        
+        for idx,cnt in enumerate(self.dict['contours']['minBoundingBox']): 
+            rgb = self.dict['contours']['color'][idx]
+            box = cv2.boxPoints(cnt)
+            box = np.int0(box)
+            cv2.drawContours(frame,[box],0,rgb,1)
+            cv2.putText(frame, self.dict['contours']['type'][idx] ,self.dict['contours']['center'][idx], cv2.FONT_HERSHEY_SIMPLEX, 0.35, rgb, 1)
+        
+        self.dict['contours']={'contours':[],'color':[],'type':[],'boundingBox':[],'minBoundingBox':[],'areas':[],'ROI':[],'center':[]}
+
         return frame
 
     def movementDetection(self,bckSub):
@@ -461,29 +492,50 @@ class blocks(base,object):
             if count>0: self.dict['ROI']['hand'].append(True)
             else: self.dict['ROI']['hand'].append(False)
 
-    def minBoundingBox(self):
-        #work out min bbox
-        pass    
+    def detectMinBoundingBoxes(self):
 
-    def boundingBox(self):
-        #work out bounding box based on contours
-        pass
-    
+        for cnt in self.dict['contours']['contours']:
+            self.dict['contours']['minBoundingBox'].append(cv2.minAreaRect(cnt))
+
+    def detectType(self):
+        
+        for idx,area in enumerate(self.dict['contours']['areas']):           
+            if area < self.dict['2x1']['value'] :  self.dict['contours']['type'].append('2x1')
+            elif area < self.dict['2x2']['value'] : self.dict['contours']['type'].append('2x2')
+            elif area < self.dict['2x4']['value'] : self.dict['contours']['type'].append('2x4')
+            else: self.dict['contours']['type'].append('larger than 2x3')
+
     def sizeFiltering(self):
-        #filter the contours based on area size
-        pass
-
-    def renderBlocks(self,frame):    
-        #render on a frame
-        pass
+        
+        for idx,c in enumerate(self.dict['contours']['contours']):
+            self.dict['contours']['areas'].append(cv2.contourArea(c))
+            if (self.dict['contours']['areas'][idx] > self.dict['AreaTopBound']['value']) |  (self.dict['contours']['areas'][idx] < self.dict['AreaBottomBound']['value']): 
+                self.dict['contours']['contours'][idx]='remove'
+                self.dict['contours']['areas'][idx]='remove'
+                self.dict['contours']['color'][idx]='remove'
+                self.dict['contours']['center'][idx]='remove'
+        
+        self.dict['contours']['contours'][:] = [item for item in self.dict['contours']['contours'] if item != 'remove']
+        self.dict['contours']['areas'][:] = [item for item in self.dict['contours']['areas'] if item != 'remove']
+        self.dict['contours']['color'][:] = [item for item in self.dict['contours']['color'] if item != 'remove']
+        self.dict['contours']['center'][:] = [item for item in self.dict['contours']['center'] if item != 'remove']
     
     def center(self):
         #positionXY calculate centers from contours
         pass
 
-    def positionROI(self):
-        #calculate in which region of interest the blocks are 
-        pass
+    def detectPosition(self):
+        
+        for bin in self.dict['ROI']['box']:
+            ll = bin[3] #lowerleft
+            ur = bin[1]  # upper-right
+
+            inidx = np.all(np.logical_and(ll <= self.dict['contours']['center'], self.dict['contours']['center'] <= ur), axis=1)
+            inbox = self.dict['contours']['center'][inidx]
+            outbox = self.dict['contours']['center'][np.logical_not(inidx)]
+            
+
+        
 
     def process(self):
         #detected to inform persistent model

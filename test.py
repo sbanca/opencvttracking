@@ -1,7 +1,7 @@
 import cvWrapper as cvW
 import interfaceWrapper as intWr
 import cv2
-from pipeline import Masks,Trims,bckSub,Thresh,Bins,wAreas
+from pipeline import Masks,Trims,bckSub,Thresh,Bins,wAreas,Blocks
 
 
 def test5():
@@ -13,7 +13,7 @@ def test5():
 
     newWindow = intWr.interface()
 
-    newWindow.config(obj=Main,pipelines=['Trim'],media=[cap0])
+    newWindow.config(obj=Blocks,pipelines=['Trim'],media=[cap0])
 
     newWindow.initialise()
     
@@ -46,23 +46,23 @@ def test3():
     cap = cv2.VideoCapture('videos/camera2.2.avi')
 
     
-    newWindow = intWr.interface()
+   # newWindow = intWr.interface()
 
     # newWindow.config(obj=Masks['Blue Mask'],pipelines=['pipelineBlue'],media=[cap])
     # newWindow.config(obj=Masks['Yellow Mask'],pipelines=['pipelineYellow'],media=[cap])
     # newWindow.config(obj=Masks['Red Mask'],pipelines=['pipelineRed'],media=[cap])
     #newWindow.config(obj=Masks['Green Mask'],pipelines=['pipelineGreen'],media=[cap])
-    newWindow.config(obj=Masks['Hand'],pipelines=['pipelineHand'],media=[cap])
+    #newWindow.config(obj=Masks['Hand'],pipelines=['pipelineHand'],media=[cap])
     # newWindow.config(obj=Trims['Trim'],pipelines=['Trim'],media=[cap])
     # newWindow.config(obj=Trims['Trim2'],pipelines=['TrimWorkArea'],media=[cap])
     #newWindow.config(obj=bckSub['bckSub'],pipelines=['bckSub','BGR2RGB'],media=[cap,cap])
     # newWindow.config(obj=Thresh['one'],pipelines=['thresh'],media=[cap])
     # newWindow.config(obj=Bins['twelveth'],pipelines=['Bins'],media=[cap])
 
-    newWindow.initialise()  
-    newWindow.create()
+    #newWindow.initialise()  
+    #newWindow.create()
 
-    # windows={}
+    windows={}
 
     # for maskKey in Masks:
     #     windows[maskKey] = intWr.interface()
@@ -76,11 +76,11 @@ def test3():
     #     windows[binname].initialise()
     #     windows[binname].create()
 
-    # for wArea in wAreas:
-    #     windows[wArea] = intWr.interface()
-    #     windows[wArea].config(obj=wAreas[wArea],pipelines=['wAreas'],media=[cap])
-    #     windows[wArea].initialise()
-    #     windows[wArea].create()
+    for wArea in wAreas:
+        windows[wArea] = intWr.interface()
+        windows[wArea].config(obj=wAreas[wArea],pipelines=['wAreas'],media=[cap])
+        windows[wArea].initialise()
+        windows[wArea].create()
 
         
 #test3()

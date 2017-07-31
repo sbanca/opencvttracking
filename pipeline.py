@@ -117,13 +117,21 @@ class pipeline(cvW.base,object):
     
     def hsv(self): self.hsv = cv2.cvtColor(self.blur,cv2.COLOR_BGR2HSV)
 
-    def blueMask(self): self.frame,contours = Masks['Blue Mask'].process(self.hsv,self.frame)
+    def blueMask(self): 
+        self.frame,contours = Masks['Blue Mask'].process(self.hsv,self.frame)
+        Blocks.addContours(contours,[255,0,0])
 
-    def redMask(self): self.frame,contours = Masks['Red Mask'].process(self.hsv,self.frame)
+    def redMask(self): 
+        self.frame,contours = Masks['Red Mask'].process(self.hsv,self.frame)
+        Blocks.addContours(contours,[0,0,255])
   
-    def greenMask(self): self.frame,contours = Masks['Green Mask'].process(self.hsv,self.frame)
+    def greenMask(self): 
+        self.frame,contours = Masks['Green Mask'].process(self.hsv,self.frame)
+        Blocks.addContours(contours,[0,255,0])
 
-    def yellowMask(self): self.frame,contours = Masks['Yellow Mask'].process(self.hsv,self.frame)
+    def yellowMask(self): 
+        self.frame,contours = Masks['Yellow Mask'].process(self.hsv,self.frame)
+        Blocks.addContours(contours,[0,255,255])
 
     def hand(self): 
         self.frame,contours = Masks['Hand'].process(self.hsv,self.frame)
@@ -146,7 +154,12 @@ class pipeline(cvW.base,object):
 
     def blocksRepres(self):Blocks.process()
 
-    def renderROIs(self): self.frame = Blocks.renderROIs(self.frame)
+    def renderROIs(self):
+        #Blocks.detectPosition()
+        Blocks.sizeFiltering()
+        Blocks.detectMinBoundingBoxes()
+        Blocks.detectType()
+        self.frame = Blocks.renderROIs(self.frame)
 
     def renderBins(self): 
         for key in Bins: 

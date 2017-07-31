@@ -2680,7 +2680,7 @@
                },
                "topRight": {
                     "value": [
-                         305,
+                         306,
                          124
                     ],
                     "interface": true,
@@ -2720,8 +2720,8 @@
                },
                "bottomRight": {
                     "value": [
-                         305,
-                         251
+                         306,
+                         250
                     ],
                     "interface": true,
                     "widget": "sliderList",
