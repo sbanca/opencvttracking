@@ -70,6 +70,7 @@ for wArea in wAreaList:
     wAreas[wArea] = cvW.binbox(wArea)
     wAreas[wArea].dictToJson('file.json',mode='load')
 
+
 #initialiseBlocks
 ##################
 
@@ -84,7 +85,7 @@ class pipeline(cvW.base,object):
     
     def __init__(self):
         super(pipeline, self).__init__( 'pipeline' )
-        self.posAttrList = ['renderROIs','renderWAreas','kind','name','Trim','Trim2','blur','blueMask','redMask','greenMask','yellowMask','hand','BGR2RGB','bckSub','thresh','gray','hsv','renderBins','blocksRepres']
+        self.posAttrList = ['renderROIs','renderWAreas','kind','name','Trim','Trim2','blur','blueMask','redMask','greenMask','yellowMask','hand','BGR2RGB','bckSub','thresh','gray','hsv','renderBins','blocksRepres','filterHand']
         self.notSave = ['kind','name']
         self.dict['kind'] = 'pipeline'
         self.stages = {'Trim':self.Trim,
@@ -103,7 +104,8 @@ class pipeline(cvW.base,object):
                        'renderBins':self.renderBins,
                        'renderWAreas':self.renderWAreas,
                        'blocksRepres':self.blocksRepres,
-                       'renderROIs':self.renderROIs}
+                       'renderROIs':self.renderROIs,
+                       'filterHand':self.filterHand}
 
         self.blankImage = np.zeros((480,640), np.uint8)
         self.stageTimers = {}
@@ -136,6 +138,11 @@ class pipeline(cvW.base,object):
     def hand(self): 
         self.frame,contours = Masks['Hand'].process(self.hsv,self.frame)
         self.handImage = np.copy(self.blankImage)
+        #self.handImage2 = np.copy(self.blankImage)
+        
+        #if len(contours)>0:
+            #self.handImage2 = cv2.drawContours(self.handImage2,contours,-1,[255,255,255],cv2.FILLED)
+
         for cnt in contours:
             bottommost = tuple(cnt[cnt[:,:,1].argmax()][0])
             cv2.circle(self.handImage,bottommost,5,[255,255,255],-1)
@@ -144,6 +151,7 @@ class pipeline(cvW.base,object):
 
     def bckSub(self): 
         self.bckSub = bckSub['bckSub'].process(self.frame)
+        #self.frame = self.bckSub
         Blocks.movementDetection(self.bckSub)
 
     def BGR2RGB(self): self.frame = cv2.cvtColor(self.frame, cv2.COLOR_BGR2RGBA)     
@@ -152,13 +160,13 @@ class pipeline(cvW.base,object):
     
     def thresh(self): self.thresh = Thresh['one'].process(self.gray)
 
+    def filterHand(self): 
+        Blocks.handFiltering(self.handImage2)
+
     def blocksRepres(self):Blocks.process()
 
     def renderROIs(self):
         #Blocks.detectPosition()
-        Blocks.sizeFiltering()
-        Blocks.detectMinBoundingBoxes()
-        Blocks.detectType()
         self.frame = Blocks.renderROIs(self.frame)
 
     def renderBins(self): 
@@ -212,10 +220,10 @@ pipelinesList['thresh'] = pipeline()
 pipelinesList['pipelineTest'].config(BGR2RGB=True)
 pipelinesList['pipelineYellow'].config(blur=True,hsv=True,yellowMask=True,BGR2RGB=True)
 pipelinesList['pipelineBlue'].config(blur=True,hsv=True,blueMask=True,BGR2RGB=True,gray=True,thresh=True)
-pipelinesList['pipelineRed'].config(blur=True,hsv=True,redMask=True,BGR2RGB=True)
+pipelinesList['pipelineRed'].config(Trim=True,blur=True,hsv=True,redMask=True,BGR2RGB=True)
 pipelinesList['pipelineGreen'].config(Trim=True,blur=True,hsv=True,greenMask=True,BGR2RGB=True)
-pipelinesList['pipelineHand'].config(Trim=True,blur=True,hsv=True,hand=True,BGR2RGB=True)
-pipelinesList['Trim'].config(Trim=True,blur=True,hsv=True,bckSub=False,hand=True,blueMask=True,redMask=True,greenMask=True,yellowMask=True,renderROIs=True,BGR2RGB=True)
+pipelinesList['pipelineHand'].config(Trim=True,blur=True,gray=True,hsv=True,hand=True,BGR2RGB=True)
+pipelinesList['Trim'].config(Trim=True,blur=True,hsv=True,bckSub=True,hand=True,blueMask=True,redMask=True,greenMask=True,yellowMask=True,blocksRepres=True,renderROIs=True,BGR2RGB=True)
 pipelinesList['thresh'].config(Trim2=True,gray=True,thresh=True)
 pipelinesList['bckSub'] = pipeline()
 pipelinesList['bckSub'].config(Trim=True,bckSub=True)

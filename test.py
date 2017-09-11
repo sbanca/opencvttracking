@@ -5,9 +5,9 @@ from pipeline import Masks,Trims,bckSub,Thresh,Bins,wAreas,Blocks
 
 
 def test5():
-    
+
     cap0 = cv2.VideoCapture('videos/camera2.2.avi')
-    
+
     Main = cvW.base('Main')
     Main.config(name='Main', saveButton = {'interface':True,'widget':'button','command':'saveobject'})
 
@@ -16,7 +16,7 @@ def test5():
     newWindow.config(obj=Blocks,pipelines=['Trim'],media=[cap0])
 
     newWindow.initialise()
-    
+
     newWindow.create()
 
 test5()
@@ -24,42 +24,42 @@ test5()
 
 
 def test4():
-    
-    cap = cv2.VideoCapture('videos/camera2.avi')
-    
+
+    cap = cv2.VideoCapture('videos/camera2.2.avi')
+
     Main = cvW.base('Main')
 
     Main.config(name='Main', saveButton = {'interface':True,'widget':'button','command':'saveobject'})
 
     newWindow = intWr.interface()
 
-    newWindow.config(obj=Main,pipelines=['pipelineTest'],media=[cap])
+    newWindow.config(obj=Main,pipelines=['Trim'],media=[cap])
 
     newWindow.initialise()
-    
+
     newWindow.create()
 
 #test4()
 
 def test3():
-    
+
     cap = cv2.VideoCapture('videos/camera2.2.avi')
 
-    
-   # newWindow = intWr.interface()
+
+    #newWindow = intWr.interface()
 
     # newWindow.config(obj=Masks['Blue Mask'],pipelines=['pipelineBlue'],media=[cap])
     # newWindow.config(obj=Masks['Yellow Mask'],pipelines=['pipelineYellow'],media=[cap])
     # newWindow.config(obj=Masks['Red Mask'],pipelines=['pipelineRed'],media=[cap])
-    #newWindow.config(obj=Masks['Green Mask'],pipelines=['pipelineGreen'],media=[cap])
-    #newWindow.config(obj=Masks['Hand'],pipelines=['pipelineHand'],media=[cap])
+    # newWindow.config(obj=Masks['Green Mask'],pipelines=['pipelineGreen'],media=[cap])
+    # newWindow.config(obj=Masks['Hand'],pipelines=['pipelineHand'],media=[cap])
     # newWindow.config(obj=Trims['Trim'],pipelines=['Trim'],media=[cap])
     # newWindow.config(obj=Trims['Trim2'],pipelines=['TrimWorkArea'],media=[cap])
-    #newWindow.config(obj=bckSub['bckSub'],pipelines=['bckSub','BGR2RGB'],media=[cap,cap])
+    # newWindow.config(obj=bckSub['bckSub'],pipelines=['bckSub','BGR2RGB'],media=[cap,cap])
     # newWindow.config(obj=Thresh['one'],pipelines=['thresh'],media=[cap])
     # newWindow.config(obj=Bins['twelveth'],pipelines=['Bins'],media=[cap])
 
-    #newWindow.initialise()  
+    #newWindow.initialise()
     #newWindow.create()
 
     windows={}
@@ -82,11 +82,11 @@ def test3():
         windows[wArea].initialise()
         windows[wArea].create()
 
-        
+
 #test3()
 
 def test2():
-    
+
     cap = cv2.VideoCapture('videos/video4.avi')
     #cap = cv2.imread('frame1.jpg')
 
@@ -150,4 +150,3 @@ def test1():
 
     obj1.printAttributes()
     obj2.printAttributes()
-

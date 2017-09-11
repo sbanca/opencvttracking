@@ -2,9 +2,10 @@ import cv2
 from tkinter import *
 from tkinter import ttk
 from PIL import Image, ImageTk
-from pipeline import pipelinesList
+from pipeline import pipelinesList, Blocks
 import copy
 import time
+import datetime
 
 ready = True
 
@@ -44,6 +45,9 @@ class interface:
         self.pipelines = {}
         self.originalframe = {}
         self.readyforupdate ={}
+        self.blocchiUpdateBool = False
+        self.taskUpdateBool = False
+        self.timeUpdateBool = False
 
         self.dict['obj'].dict['speed'] = 1
         self.posWidgets = ['button','slider','dropdown']
@@ -125,6 +129,19 @@ class interface:
                             elif self.dict['obj'].dict[key]['widget'] == 'entryList': self.createEntryFromList(key)
                             elif self.dict['obj'].dict[key]['widget'] == 'entry': self.createEntry(key)
                             elif self.dict['obj'].dict[key]['widget'] == 'multibutton': self.createMultiButton(key)
+                            elif self.dict['obj'].dict[key]['widget'] == 'text':self.createText(key)
+
+    
+    def createText(self,key):
+
+        self.widgets[key + 'Text'] = StringVar()
+        self.widgets[key + 'Text'].set('text')
+        self.widgets[key + 'Label'] = ttk.Label(self.frames['sliderFrame'],textvariable=self.widgets[key+'Text'])
+        self.widgets[key + 'Label'].pack(side=TOP,padx=10,pady=10)
+
+        if 'blocchi' in key: self.blocchiUpdateBool = True
+        if 'task' in key: self.taskUpdateBool = True
+        if 'time' in key: self.timeUpdateBool = True
 
     def createEntry(self,key):
         
@@ -230,12 +247,12 @@ class interface:
         for key in self.cap:
 
             if self.dict['obj'].dict['speed']>1000:
-                self.frame[key]=self.frameOriginal[key] 
+                self.frame[key]=copy.copy(self.frameOriginal[key]) 
                 speed = self.dict['obj'].dict['speed'] -1000
             else:    
                 if self.cap[key].isOpened() :
                     _, self.frame[key] = self.cap[key].read()
-                    self.frameOriginal[key] = self.frame[key]
+                    self.frameOriginal[key] = copy.copy(self.frame[key])
                     self.readyforupdate[key] = False
                     speed = self.dict['obj'].dict['speed'] 
                 else: return 
@@ -252,6 +269,10 @@ class interface:
 
         result = pipelinesList[self.pipelines[key]].process(self.frame[key])
         self.pipelinePerformance(key)
+        
+        if self.blocchiUpdateBool: self.blocchiUpdate(key)
+        if self.taskUpdateBool: self.taskUpdate(key)
+        if self.timeUpdateBool: self.timeUpdate(key)
 
         img = Image.fromarray(result)
         imgtk = ImageTk.PhotoImage(image=img)
@@ -269,6 +290,47 @@ class interface:
                     performanceList.append( pipelinesList[self.pipelines[key]].stageTimers[timer].label + ' ' +  str(pipelinesList[self.pipelines[key]].stageTimers[timer].timer)[:6] + '  ')
 
         self.performance[key+'Text'].set(performanceSummary.join(performanceList))
+
+    def blocchiUpdate(self,key):
+        blocchiList = []
+        blocchiSummary = ' '
+
+        for idx,blockName in enumerate(Blocks.dict['persistentModel']):
+            block = Blocks.dict['persistentModel'][blockName]
+            blocco = ''
+            blocco = blocco + blockName
+            for item in block['ROIHistory']:
+                if not(item==''):blocco = blocco + ' --> '+ item 
+            blocco = blocco + '\n'
+            blocchiList.append(blocco)
+       
+        blocchiSummary = blocchiSummary.join(blocchiList)         
+        self.textUpdate('blocchi',blocchiSummary)    
+    
+
+    
+    def taskUpdate(self,key):
+        taskList = []
+        taskSummary = ' '
+
+        for idx,taskName in enumerate(Blocks.dict['proceduralTask']):
+            task = Blocks.dict['proceduralTask'][taskName]
+            string = 'Step'+str(taskName)+': '+ task['block']+'-->'+task['targetROI']
+            if task['completed']: string = string + ' --> completed @ ' + task['timestamp']
+            if task['error']: string = string + ' --> error'
+            string = string + '\n'
+            taskList.append(string)
+       
+        taskSummary = taskSummary.join(taskList)         
+        self.textUpdate('task',taskSummary)    
+
+    def timeUpdate(self,key):
+        timenow = Blocks.getStamp()
+        self.textUpdate('time',timenow)
+
+
+    def textUpdate(self,name,text):
+        self.widgets[name+'Text'].set(text)
 
     def create(self):
         self.window.mainloop()  
