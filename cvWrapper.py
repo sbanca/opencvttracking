@@ -521,6 +521,7 @@ class blocks(base,object):
                                      'blocco11':{'color':[0,255,255],'colorName':'Yellow','type':'2x2'},
                                      'blocco12':{'color':[0,255,255],'colorName':'Yellow','type':'2x4'}}
         self.cleanPersistentModel()
+        self.persMod=[]
 
         self.dict['task'] = {'interface':True,'widget':'text'}
         self.dict['procedureToggle'] = {"value": True,"interface": True,"widget": "button","command": "toggleBoolean"}
@@ -803,68 +804,90 @@ class blocks(base,object):
 
     def twoPDistance(self,point1,point2):
         return abs(point1[0]-point2[0])+abs(point1[1]-point2[1])
+    
+    def convertPersModToNP(self):
+
+        self.persMod = np.array([ [key,
+            block['color'][0],
+            block['color'][1],
+            block['color'][2],
+            block['colorName'],
+            block['type'],
+            block['ROI'],
+            block['lastROI'],
+            block['lastDtcROI'],
+            block['movement'],
+            block['minBBox'],
+            block['oldMinBBox'],
+            block['center'],
+            block['contoursID'],
+            block['ROIHistory'],
+            block['coordinatesIndexes'],
+            block['coordinatesFirst'],
+            block['coordinatesLast'],
+            block['ROIindex'],
+            block['checkProcedure'],
+            block['blocked'],
+            block['positionList'],
+            block['timeList'],
+            block['deleteList']] for (key,block) in self.dict['persistentModel'].items()],dtype=object)
 
     def PMassociateDetectedAndExpected(self):
 
-        for idx,contours in enumerate(self.dict['contours']['contours']):
-            #a = [k[1]['color']== self.dict['contours']['color'][idx] for k in self.dict['persistentModel'].items()]
+        for idx,contours in enumerate(self.dict['contours']['contours']):  
+           
+            cntHndMvmnt = self.dict['contours']['ROIhand'][idx]
+            cntMvmnt = self.dict['contours']['ROImovement'][idx] 
+            cntRoiUndt = self.dict['contours']['ROI'][idx] == 'undetected'
+                      
+
             for blockName in self.dict['persistentModel']:
                 
                 block = self.dict['persistentModel'][blockName]
                 sameColor = self.dict['contours']['color'][idx] == block['color']
-
-                if block['blocked']: continue
-                elif not(sameColor): continue
-
-                typeExist = len(self.dict['contours']['type'])>0
-                sameType = self.dict['contours']['type'][idx] == block['type']    
-                cntHndMvmnt = self.dict['contours']['ROIhand'][idx]
-                cntMvmnt = self.dict['contours']['ROImovement'][idx]
-                blckRoiUndt = block['ROI'] == 'undetected'
-                cntRoiUndt = self.dict['contours']['ROI'][idx] == 'undetected'
                 
+                if not(block['ROI'] == 'undetected'): continue
+                elif block['blocked']: continue
+                elif not(sameColor): continue
+                
+                sameType = self.dict['contours']['type'][idx] == block['type']    
+
                 distance = 20
 
-                if (typeExist and blckRoiUndt ):
+                if (not(block['center']=='')):       
+                    
+                    distance = self.twoPDistance(block['center'],self.dict['contours']['center'][idx])
 
-                    if (not(block['center']=='')):       
-                        
-                        distance = self.twoPDistance(block['center'],self.dict['contours']['center'][idx])
-
-                        if distance < 4: 
-                            block['ROI'] = block['ROIHistory'][-1]
-                            if not(block['positionList'] == []):block['deleteList'] = True
-                            break 
-
-
-                    if (sameType and not(cntRoiUndt) and not(cntHndMvmnt) and not(cntMvmnt)): 
-                        
-                        block['ROI'] = self.dict['contours']['ROI'][idx]
-                        block['ROIindex'] = self.dict['contours']['ROIindex'][idx]
-                        block['minBBox'] = self.dict['contours']['minBoundingBox'][idx]
-                        block['center'] = self.dict['contours']['center'][idx]
-                        self.calculateCoordinates(idx,blockName)
+                    if distance < 4: 
+                        block['ROI'] = block['ROIHistory'][-1]
                         if not(block['positionList'] == []):block['deleteList'] = True
                         break 
 
 
-                    if ( (cntHndMvmnt or cntMvmnt) and block['movement']): 
-                        
-                        if block['positionList']==[]: 
-                            block['positionList'].append(block['center'])
-                            block['timeList'].append(self.getStamp())
-                        
-                        distance = self.twoPDistance(block['positionList'][-1],self.dict['contours']['center'][idx])
+                if (sameType and not(cntRoiUndt) and not(cntHndMvmnt) and not(cntMvmnt)): 
+                    
+                    block['ROI'] = self.dict['contours']['ROI'][idx]
+                    block['ROIindex'] = self.dict['contours']['ROIindex'][idx]
+                    block['minBBox'] = self.dict['contours']['minBoundingBox'][idx]
+                    block['center'] = self.dict['contours']['center'][idx]
+                    self.calculateCoordinates(idx,blockName)
+                    if not(block['positionList'] == []):block['deleteList'] = True
+                    break 
 
-                        if distance > 10 and distance < 200 :
-                            block['positionList'].append(self.dict['contours']['center'][idx])
-                            block['timeList'].append(self.getStamp())
-                            break
+
+                if ( (cntHndMvmnt or cntMvmnt) and block['movement']): 
+                    
+                    if block['positionList']==[]: 
+                        block['positionList'].append(block['center'])
+                        block['timeList'].append(self.getStamp())
+                    
+                    distance = self.twoPDistance(block['positionList'][-1],self.dict['contours']['center'][idx])
+
+                    if distance > 20 and distance < 200 :
+                        block['positionList'].append(self.dict['contours']['center'][idx])
+                        block['timeList'].append(self.getStamp())
+                        break
                         
-                        # if sameType:
-                        #     block['positionList'].append(self.dict['contours']['center'][idx])
-                        #     block['timeList'].append(self.getStamp())
-                        #     break
 
 
 
@@ -905,42 +928,6 @@ class blocks(base,object):
             except Exception as e: print(e)
 
 
-    def PMassociateDetectedAndExpected2(self):
-
-        for idx,contours in enumerate(self.dict['contours']['contours']):
-            for blockName in self.dict['persistentModel']:
-
-                block = self.dict['persistentModel'][blockName]
-
-                
-                distance = 20 
-                score = 0
-
-                if (not(block['center']=='')):
-                    oldCenter = block['center']
-                    posNewCenter = self.dict['contours']['center'][idx]
-                    distance = abs(oldCenter[0]-posNewCenter[0])+abs(oldCenter[1]-posNewCenter[1])
-                
-                sameColor = self.dict['contours']['color'][idx] == block['color']
-                sameType = self.dict['contours']['type'][idx] == block['type']
-                handMovment = self.dict['contours']['ROIhand'][idx]
-                movement = self.dict['contours']['ROImovement']
-                sameCenter = distance < 10 
-                stillUndetected = block['ROI'] == 'undetected'
-
-                if stillUndetected: score += 1
-                if sameColor: score += 1
-                if sameType: score += 1
-                if handMovment: score -= 1
-                if movement: score -= 1
-                if sameCenter: score += 1
-                
-                print(score)
-                
-                if score==4:
-                    block['ROI'] = self.dict['contours']['ROI'][idx]
-                    block['ROIindex'] = self.dict['contours']['ROIindex'][idx]
-                    block['minBBox'] = self.dict['contours']['minBoundingBox'][idx]
 
 
 

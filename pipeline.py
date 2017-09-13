@@ -223,6 +223,8 @@ pipelinesList['pipelineBlue'].config(blur=True,hsv=True,blueMask=True,BGR2RGB=Tr
 pipelinesList['pipelineRed'].config(Trim=True,blur=True,hsv=True,redMask=True,BGR2RGB=True)
 pipelinesList['pipelineGreen'].config(Trim=True,blur=True,hsv=True,greenMask=True,BGR2RGB=True)
 pipelinesList['pipelineHand'].config(Trim=True,blur=True,gray=True,hsv=True,hand=True,BGR2RGB=True)
+pipelinesList['TrimWarp'] = pipeline()
+pipelinesList['TrimWarp'].config(Trim=True,BGR2RGB=True)
 pipelinesList['Trim'].config(Trim=True,blur=True,hsv=True,bckSub=True,hand=True,blueMask=True,redMask=True,greenMask=True,yellowMask=True,blocksRepres=True,renderROIs=True,BGR2RGB=True)
 pipelinesList['thresh'].config(Trim2=True,gray=True,thresh=True)
 pipelinesList['bckSub'] = pipeline()
