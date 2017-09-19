@@ -238,8 +238,7 @@ class HSVMask(base,object):
         #if len(self.contours) > 3 :  self.dict['speed'] = 1001              
 
     
-    def drawContours(self): 
-        cv2.drawContours(self.frame, self.contours, -1, self.dict['strokeRgb']['value'],self.dict['StrokeThikness']['value'])
+    def drawContours(self): cv2.drawContours(self.frame, self.contours, -1, self.dict['strokeRgb']['value'],self.dict['StrokeThikness']['value'])
 
     
     def drawLabel(self):
@@ -926,6 +925,20 @@ class blocks(base,object):
                         block['timeList'].append(self.getStamp())
                         continue 
                 
+                        
+                    # if not(block['minBBox']==''):                    
+                    #     boxBlock = cv2.boxPoints(block['minBBox'])
+                    #     contournBlock =  cv2.boxPoints(self.dict['contours']['minBoundingBox'][idx])
+                    #     partOfTheSameBlock = [False,False,False,False]
+                        
+                    #     partOfTheSameBlock[0] = True if self.twoPDistance(boxBlock[0],contournBlock[0]) < 5 else False
+                    #     partOfTheSameBlock[1] = True if self.twoPDistance(boxBlock[1],contournBlock[1]) < 5 else False
+                    #     partOfTheSameBlock[2] = True if self.twoPDistance(boxBlock[2],contournBlock[2]) < 5 else False
+                    #     partOfTheSameBlock[3] = True if self.twoPDistance(boxBlock[3],contournBlock[3]) < 5 else False
+
+                    #     partOftheSameBro = True if  partOfTheSameBlock.count(True)>1 else False               
+                    # else: 
+                    #     partOftheSameBro = False
 
                     if distance < 10 and (sameType ):
                         block['confidence1'] += 1

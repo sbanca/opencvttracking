@@ -6,7 +6,7 @@ from pipeline import Masks,Trims,bckSub,Thresh,Bins,wAreas,Blocks
 
 def test5():
 
-    cap0 = cv2.VideoCapture('videos/test5.avi')
+    cap0 = cv2.VideoCapture('videos/blocks4.avi')
 
     Main = cvW.base('Main')
     Main.config(name='Main', saveButton = {'interface':True,'widget':'button','command':'saveobject'})
