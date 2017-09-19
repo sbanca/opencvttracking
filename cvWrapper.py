@@ -254,6 +254,26 @@ class HSVMask(base,object):
                 self.centers.append[()]
             except Exception: 
                 pass
+    
+    def mostSomenthing(self,frameProcess,frameReppres):
+        
+        value = self.dict['maxMinPoint']['value']
+        most=(0,0)
+
+        for cnt in self.contours:
+            if ( value == 0 ): 
+                most = tuple(cnt[cnt[:,:,0].argmin()][0])
+            elif ( value == 1 ):
+                most = tuple(cnt[cnt[:,:,0].argmax()][0])
+            elif ( value == 2 ): 
+                most = tuple(cnt[cnt[:,:,1].argmin()][0])
+            elif ( value == 3 ): 
+                most = tuple(cnt[cnt[:,:,1].argmax()][0])
+            cv2.circle(frameProcess,most,5,[255,255,255],-1)
+            cv2.circle(frameReppres,most,5,[0,255,0],-1)
+        
+        return (frameProcess,frameReppres,most)
+
 
 class Main(base,object):
 
@@ -491,6 +511,8 @@ class blocks(base,object):
         self.posAttrList = ['kind','name','BlockProp','AreaTopBound','AreaBottomBound','2x1','2x2','2x4','blocchi','persistentModelToggle','persistentModel','proceduralTask']
         self.notSave = self.notSave = ['kind','name','contours','oldContours','ROI']
         self.dict['kind'] = 'blocks'
+        self.dict['blockInMovement']=''
+        self.dict['handPosition']=[]
         
         self.ts = time.time()
 
@@ -671,9 +693,18 @@ class blocks(base,object):
                             cv2.circle(frame, (item[0],item[1]), 1 , rgb, 2)
                             cv2.line(frame,(item[0],item[1]),(item2[0],item2[1]),rgb,2)
                         except Exception as e: print(e)
-                    #test = np.array([self.dict['persistentModel'][blockName]['positionList']], dtype=np.int32)
-                    #cv2.drawContours(frame,[test],0,rgb,2)
+
+
+
         
+        if len(self.dict['handPosition'])>3:
+            cv2.circle(frame, self.dict['handPosition'][-1], 1 , [255,0,0], 2)
+            cv2.line(frame,self.dict['handPosition'][-1],self.dict['handPosition'][-2],[255,0,0],2)
+            cv2.circle(frame, self.dict['handPosition'][-2], 1 , [255,0,0], 2)
+            cv2.line(frame,self.dict['handPosition'][-2],self.dict['handPosition'][-3],[255,0,0],2)
+            cv2.circle(frame, self.dict['handPosition'][-3], 1 , [255,0,0], 2)
+            cv2.line(frame,self.dict['handPosition'][-3],self.dict['handPosition'][-4],[255,0,0],2)
+
         self.dict['oldContours'] = copy.copy(self.dict['contours'])
         self.dict['contours']={'contours':[],'color':[],'type':[],'boundingBox':[],'minBoundingBox':[],'areas':[],'ROI':[],'center':[],'ROImovement':[],'ROIhand':[],'ROIindex':[]}
         
@@ -692,23 +723,25 @@ class blocks(base,object):
             else: self.dict['ROI']['movement'].append(False)
         
 
-    def handDetection(self,handPos):
+    def handDetection(self,handPos,handCoordinates):
        
         self.dict['ROI']['hand']=[]
         
+        self.dict['handPosition'].append(handCoordinates)
+
         for idx,ROI in enumerate(self.dict['ROI']['box']): 
             imgROI = handPos[ ROI[0][1]:ROI[2][1],ROI[0][0]:ROI[2][0]]                 
             count = cv2.countNonZero(imgROI)
             if count>0: self.dict['ROI']['hand'].append(True)
             else: self.dict['ROI']['hand'].append(False)
+        
 
+        
 
     def detectMinBoundingBoxes(self):
 
         for cnt in self.dict['contours']['contours']:
             self.dict['contours']['minBoundingBox'].append(cv2.minAreaRect(cnt))
-            
-
 
     def detectType(self):
         
@@ -842,8 +875,11 @@ class blocks(base,object):
                       
 
             for blockName in self.dict['persistentModel']:
-                
+
                 block = self.dict['persistentModel'][blockName]
+                
+
+
                 sameColor = self.dict['contours']['color'][idx] == block['color']
                 
                 if not(block['ROI'] == 'undetected'): continue
@@ -875,21 +911,79 @@ class blocks(base,object):
                     break 
 
 
-                if ( (cntHndMvmnt or cntMvmnt) and block['movement']): 
-                    
+                if (cntHndMvmnt or cntMvmnt) :
+                     
                     if block['positionList']==[]: 
                         block['positionList'].append(block['center'])
                         block['timeList'].append(self.getStamp())
                     
                     distance = self.twoPDistance(block['positionList'][-1],self.dict['contours']['center'][idx])
 
-                    if distance > 20 and distance < 200 :
+
+                    if distance > 10 and distance < 100 :
                         block['positionList'].append(self.dict['contours']['center'][idx])
                         block['timeList'].append(self.getStamp())
-                        break
+                        continue 
+                
                         
+                    # if not(block['minBBox']==''):                    
+                    #     boxBlock = cv2.boxPoints(block['minBBox'])
+                    #     contournBlock =  cv2.boxPoints(self.dict['contours']['minBoundingBox'][idx])
+                    #     partOfTheSameBlock = [False,False,False,False]
+                        
+                    #     partOfTheSameBlock[0] = True if self.twoPDistance(boxBlock[0],contournBlock[0]) < 5 else False
+                    #     partOfTheSameBlock[1] = True if self.twoPDistance(boxBlock[1],contournBlock[1]) < 5 else False
+                    #     partOfTheSameBlock[2] = True if self.twoPDistance(boxBlock[2],contournBlock[2]) < 5 else False
+                    #     partOfTheSameBlock[3] = True if self.twoPDistance(boxBlock[3],contournBlock[3]) < 5 else False
 
+                    #     partOftheSameBro = True if  partOfTheSameBlock.count(True)>1 else False               
+                    # else: 
+                    #     partOftheSameBro = False
 
+                    if distance < 10 and (sameType ):
+                        block['confidence1'] += 1
+                        if block['confidence1'] > 10:
+                            block['ROI'] = self.dict['contours']['ROI'][idx]
+                            block['ROIindex'] = self.dict['contours']['ROIindex'][idx]
+                            block['minBBox'] = self.dict['contours']['minBoundingBox'][idx]
+                            block['center'] = self.dict['contours']['center'][idx]
+                            self.calculateCoordinates(idx,blockName)
+                            if not(block['positionList'] == []):block['deleteList'] = True
+                            block['confidence1']=0
+                            continue
+                                                
+                    elif (sameType ):
+                        block['confidence3'] += 1
+                        if block['confidence3'] > 50:
+                            block['ROI'] = self.dict['contours']['ROI'][idx]
+                            block['ROIindex'] = self.dict['contours']['ROIindex'][idx]
+                            block['minBBox'] = self.dict['contours']['minBoundingBox'][idx]
+                            block['center'] = self.dict['contours']['center'][idx]
+                            self.calculateCoordinates(idx,blockName)
+                            if not(block['positionList'] == []):block['deleteList'] = True
+                            block['confidence3']=0
+                            continue
+                            
+
+  
+                
+
+    def applyBlock(self,blockName,idx):
+
+        block = self.dict['persistentModel'][blockName]
+        block['ROI'] = self.dict['contours']['ROI'][idx]
+        block['ROIindex'] = self.dict['contours']['ROIindex'][idx]
+        block['minBBox'] = self.dict['contours']['minBoundingBox'][idx]
+        block['center'] = self.dict['contours']['center'][idx]
+        self.calculateCoordinates(idx,blockName)
+        if not(block['positionList'] == []):block['deleteList'] = True
+        block['confidence1']=0
+        block['confidence2']=0
+        block['confidence3']=0
+           
+
+  
+    
 
 
     def calculateCoordinates(self,idx,blockName):
@@ -953,6 +1047,9 @@ class blocks(base,object):
              block['positionList'] = []
              block['timeList']=[]
              block['deleteList']=False
+             block['confidence1']=0
+             block['confidence2']=0
+             block['confidence3']=0
 
     def getStamp(self): 
         

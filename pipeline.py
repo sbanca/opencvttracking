@@ -138,16 +138,8 @@ class pipeline(cvW.base,object):
     def hand(self): 
         self.frame,contours = Masks['Hand'].process(self.hsv,self.frame)
         self.handImage = np.copy(self.blankImage)
-        #self.handImage2 = np.copy(self.blankImage)
-        
-        #if len(contours)>0:
-            #self.handImage2 = cv2.drawContours(self.handImage2,contours,-1,[255,255,255],cv2.FILLED)
-
-        for cnt in contours:
-            bottommost = tuple(cnt[cnt[:,:,1].argmax()][0])
-            cv2.circle(self.handImage,bottommost,5,[255,255,255],-1)
-            cv2.circle(self.frame,bottommost,5,[0,255,0],-1)
-        Blocks.handDetection(self.handImage)
+        self.handImage,self.frame,self.handPosition = Masks['Hand'].mostSomenthing(self.handImage,self.frame) 
+        Blocks.handDetection(self.handImage,self.handPosition)
 
     def bckSub(self): 
         self.bckSub = bckSub['bckSub'].process(self.frame)
@@ -160,10 +152,9 @@ class pipeline(cvW.base,object):
     
     def thresh(self): self.thresh = Thresh['one'].process(self.gray)
 
-    def filterHand(self): 
-        Blocks.handFiltering(self.handImage2)
+    def filterHand(self): Blocks.handFiltering(self.handImage2)
 
-    def blocksRepres(self):Blocks.process()
+    def blocksRepres(self): Blocks.process()
 
     def renderROIs(self):
         #Blocks.detectPosition()

@@ -6,7 +6,7 @@ from pipeline import Masks,Trims,bckSub,Thresh,Bins,wAreas,Blocks
 
 def test5():
 
-    cap0 = cv2.VideoCapture('videos/camera2.2.avi')
+    cap0 = cv2.VideoCapture('videos/blocks4.avi')
 
     Main = cvW.base('Main')
     Main.config(name='Main', saveButton = {'interface':True,'widget':'button','command':'saveobject'})
@@ -19,8 +19,7 @@ def test5():
 
     newWindow.create()
 
-#test5()
-
+test5()
 
 
 def test4():
@@ -83,7 +82,7 @@ def test3():
     #     windows[wArea].create()
 
 
-test3()
+#test3()
 
 def test2():
 
