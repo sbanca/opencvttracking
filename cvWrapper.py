@@ -127,11 +127,12 @@ class HSVMask(base,object):
     def __init__(self,name,object=None):
         super(HSVMask, self).__init__( name )
         if not (object == None): self.referencedObject = object
-        self.posAttrList = ['kind','name','bottomBoundary','topBoundary','erosion','dilation','blur','minBBoxes','drawMinBBoxes','AreaTopBound','AreaBottomBound','StrokeThikness','strokeRgb','saveButton', 'detect', 'filterC' ,'Contours' ,'drawLabel','trim','boundingBoxIncrement']
+        self.posAttrList = ['kind','name','bottomBoundary','topBoundary','erosion','dilation','blur','minBBoxes','drawMinBBoxes','AreaTopBound','AreaBottomBound','StrokeThikness','strokeRgb','saveButton', 'detect', 'filterC' ,'Contours' ,'drawLabel','trim','boundingBoxIncrement','maxMinPoint']
         self.notSave = ['kind','name']
         self.dict['kind'] = 'HSVMask'
         self.count=0
         self.mask = np.zeros((480,640), np.uint8)
+        self.dict['maxMinPoint'] = {'value':0,'interface':True,'widget':'multibutton','buttonsValues':[0,1,2,3],'buttonsNames':['leftmost','rightmost','bottommost','topmost']}
 
 
     def process(self,hsvFrame,frame):
@@ -238,9 +239,7 @@ class HSVMask(base,object):
         #if len(self.contours) > 3 :  self.dict['speed'] = 1001              
 
     
-    def drawContours(self): cv2.drawContours(self.frame, self.contours, -1, self.dict['strokeRgb']['value'],self.dict['StrokeThikness']['value'])
-
-    
+    def drawContours(self): cv2.drawContours(self.frame, self.contours, -1, self.dict['strokeRgb']['value'],self.dict['StrokeThikness']['value'])    
     def drawLabel(self):
 
         self.centers = []
@@ -258,7 +257,6 @@ class HSVMask(base,object):
     def mostSomenthing(self,frameProcess,frameReppres):
         
         value = self.dict['maxMinPoint']['value']
-        most=(0,0)
 
         for cnt in self.contours:
             if ( value == 0 ): 
@@ -272,7 +270,7 @@ class HSVMask(base,object):
             cv2.circle(frameProcess,most,5,[255,255,255],-1)
             cv2.circle(frameReppres,most,5,[0,255,0],-1)
         
-        return (frameProcess,frameReppres,most)
+        return (frameProcess,frameReppres)
 
 
 class Main(base,object):
@@ -349,7 +347,7 @@ class bckSub(base,object):
         # self.dict['value1'] = {'value':255,'interface':True,'widget':'slider','max':255,'min':0}
         # self.dict['value2'] = {'value':127,'interface':True,'widget':'slider','max':127,'min':0}
         # self.dict['blur'] =  {'value':127,'interface':True,'widget':'slider','max':127,'min':0}
-        self.kernel = np.ones((11,11),np.uint8)
+        self.kernel = np.ones((7,7),np.uint8)
     
     
     def process(self,frame):
@@ -428,7 +426,34 @@ class binbox(base,object):
         
         self.dict['coordinateBoxes'] = []
         self.dict['coordinateBoxesNumPy'] = []
-        
+
+        if self.dict['coordinatesToggle']['value']:
+
+             try: self.notSave.remove('translateCoordX') 
+             except Exception as e: print(e)
+             try: self.notSave.remove('revTransCoordX') 
+             except Exception as e: print(e)
+             try: self.notSave.remove('translateCoordY') 
+             except Exception as e: print(e)
+             try: self.notSave.remove('revTransCoordY') 
+             except Exception as e: print(e)
+             try: self.notSave.remove('cX') 
+             except Exception as e: print(e)
+             try: self.notSave.remove('cY') 
+             except Exception as e: print(e)
+             try: self.notSave.remove('coordinateBoxes') 
+             except Exception as e: print(e)
+
+
+        else:
+             self.notSave.append('translateCoordX')
+             self.notSave.append('revTransCoordX')
+             self.notSave.append('translateCoordY')
+             self.notSave.append('revTransCoordY')
+             self.notSave.append('cX')
+             self.notSave.append('cY')
+             self.notSave.append('coordinateBoxes')
+    
         if self.dict['reverseValueX']['value']: listX = self.dict['revTransCoordX'] 
         else: listX = self.dict['translateCoordX']
         if self.dict['reverseValueY']['value']: listY = self.dict['revTransCoordY'] 
@@ -512,46 +537,55 @@ class blocks(base,object):
         self.notSave = self.notSave = ['kind','name','contours','oldContours','ROI']
         self.dict['kind'] = 'blocks'
         self.dict['blockInMovement']=''
-        self.dict['handPosition']=[]
         
         self.ts = time.time()
 
         self.dict['ROI'] ={'movementThresold':0,'center':[],'box':[],'name':[],'movement':[],'hand':[],'coordinatesToggle':[],'coordinatesX':[],'coordinatesY':[],'coordinateBoxes':[],'coordinateBoxesNumPy':[],'coordinateCenter':[],'cX':[],'cY':[]}
-        self.dict['contours']={'contours':[],'color':[],'type':[],'boundingBox':[],'minBoundingBox':[],'areas':[],'ROI':[],'center':[],'ROImovement':[],'ROIhand':[],'ROIindex':[]}
+        self.dict['contours']={'contours':[],'color':[],'type':[],'boundingBox':[],'minBoundingBox':[],'areas':[],'ROI':[],'center':[],'ROImovement':[],'ROIhand':[],'ROIindex':[],'movement':[]}
         self.dict['oldContours']={}
+        self.dict['oldContoursExist'] = False
 
         self.dict['BlockProp'] = ['id','boundingBox','minBoundingBox','center','color','size','positionXY','positionROI']     
         self.dict['AreaTopBound'] = {'value':2000,'interface':False,'widget':'slider','max':10000,'min':0}
         self.dict['AreaBottomBound']={'value':128,'interface':False,'widget':'slider','max':10000,'min':0}
-        self.dict['2x1'] = {'value':427,'interface':False,'widget':'slider','max':10000,'min':0}
-        self.dict['2x2'] = {'value':769,'interface':False,'widget':'slider','max':10000,'min':0}
+        self.dict['2x1'] = {'value':350,'interface':False,'widget':'slider','max':10000,'min':0}
+        self.dict['2x2'] = {'value':600,'interface':False,'widget':'slider','max':10000,'min':0}
         self.dict['2x4'] = {'value':1368,'interface':False,'widget':'slider','max':10000,'min':0}
         self.dict['time'] = {'interface':True,'widget':'text'}
         
         self.dict['blocchi'] = {'interface':True,'widget':'text'}
         self.dict['persistentModelToggle'] = {"value": True,"interface": True,"widget": "button","command": "toggleBoolean"}       
-        self.dict['persistentModel']={'blocco1':{'color':[0,255,0],'colorName':'Green','type':'2x1'},
-                                     'blocco2':{'color':[0,255,0],'colorName':'Green','type':'2x2'},
-                                     'blocco3':{'color':[0,255,0],'colorName':'Green','type':'2x4'},
-                                     'blocco4':{'color':[255,0,0],'colorName':'Blue','type':'2x1'},
-                                     'blocco5':{'color':[255,0,0],'colorName':'Blue','type':'2x2'},
-                                     'blocco6':{'color':[255,0,0],'colorName':'Blue','type':'2x4'},
-                                     'blocco7':{'color':[0,0,255],'colorName':'Red','type':'2x1'},
-                                     'blocco8':{'color':[0,0,255],'colorName':'Red','type':'2x2'},
-                                     'blocco9':{'color':[0,0,255],'colorName':'Red','type':'2x4'},
-                                     'blocco10':{'color':[0,255,255],'colorName':'Yellow','type':'2x1'},
-                                     'blocco11':{'color':[0,255,255],'colorName':'Yellow','type':'2x2'},
-                                     'blocco12':{'color':[0,255,255],'colorName':'Yellow','type':'2x4'}}
+        self.dict['persistentModel']={'blocco9':{'color':[0,0,255],'colorName':'Red','type':'2x4'},
+                                      'blocco3':{'color':[0,255,0],'colorName':'Green','type':'2x4'},
+                                      'blocco6':{'color':[255,0,0],'colorName':'Blue','type':'2x4'},
+                                      'blocco12':{'color':[0,255,255],'colorName':'Yellow','type':'2x4'},
+                                      'blocco8':{'color':[0,0,255],'colorName':'Red','type':'2x2'},
+                                      'blocco2':{'color':[0,255,0],'colorName':'Green','type':'2x2'},
+                                      'blocco5':{'color':[255,0,0],'colorName':'Blue','type':'2x2'},
+                                      'blocco11':{'color':[0,255,255],'colorName':'Yellow','type':'2x2'},
+                                      'blocco10':{'color':[0,255,255],'colorName':'Yellow','type':'2x1'},
+                                      'blocco1':{'color':[0,255,0],'colorName':'Green','type':'2x1'},
+                                      'blocco7':{'color':[0,0,255],'colorName':'Red','type':'2x1'},
+                                      'blocco4':{'color':[255,0,0],'colorName':'Blue','type':'2x1'}}
+
         self.cleanPersistentModel()
         self.persMod=[]
 
         self.dict['task'] = {'interface':True,'widget':'text'}
         self.dict['procedureToggle'] = {"value": True,"interface": True,"widget": "button","command": "toggleBoolean"}
-        self.dict['proceduralTask'] = {1:{'block':'blocco10','targetROI':'areaSecond J,16 K,16'},
-                                       2:{'block':'blocco3','targetROI':'areaFirst AJ,15 AM,16'},
-                                       3:{'block':'blocco6','targetROI':'areaSecond L,14 O,15'},
-                                       4:{'block':'blocco7','targetROI':'areaFirst AJ,14 AJ,15'},
-                                       5:{'block':'blocco2','targetROI':'areaSecond N,15 O,16'}}
+        self.dict['proceduralTask'] = {1:{'block':'blocco9','targetROI':'areaFirst AS,9 AV,10'},
+                                       2:{'block':'blocco3','targetROI':'areaFirst AS,11 AV,12'},
+                                       3:{'block':'blocco6','targetROI':'areaFirst AS,9 AT,12'},
+                                       4:{'block':'blocco12','targetROI':'areaFirst AS,13 AV,14'},
+                                       5:{'block':'blocco8','targetROI':'areaFirst AS,13 AT,14'},
+                                       6:{'block':'blocco2','targetROI':'areaFirst AQ,13 AR,14'},
+                                       7:{'block':'blocco5','targetROI':'areaFirst AO,13 AP,14'},
+                                       8:{'block':'blocco11','targetROI':'areaFirst AM,13 AN,14'},
+                                       9:{'block':'blocco10','targetROI':'areaFirst AQ,15 AR,15'},
+                                       10:{'block':'blocco1','targetROI':'areaFirst AU,15 AV,15'},
+                                       11:{'block':'blocco7','targetROI':'areaFirst AO,15 AP,15'},
+                                       12:{'block':'blocco4','targetROI':'areaFirst AM,15 AN,15'}}
+
         self.cleanProceduralTaskModel()
         time.clock()
 
@@ -562,7 +596,7 @@ class blocks(base,object):
                 M = cv2.moments(cnt)
                 cX = int(M["m10"] / M["m00"])
                 cY = int(M["m01"] / M["m00"])
-                self.dict['contours']['center'].append((cX-10,cY+10))
+                self.dict['contours']['center'].append((cX,cY))
             except Exception:
                 self.dict['contours']['center'].append((0,0))           
 
@@ -574,6 +608,8 @@ class blocks(base,object):
             self.dict['contours']['ROIindex'].append('undetected')
             self.dict['contours']['type'].append('noType')
             self.dict['contours']['areas'].append(cv2.contourArea(cnt))
+            self.dict['contours']['movement'].append(False)
+            self.dict['contours']['minBoundingBox'].append('empty')
 
     def addROI(self,dictionary):
         
@@ -655,7 +691,10 @@ class blocks(base,object):
             cv2.drawContours(frame,[ROI],0,rgb,1)
             cv2.putText(frame, self.dict['ROI']['name'][idx] ,self.dict['ROI']['center'][idx], cv2.FONT_HERSHEY_SIMPLEX, 0.35, rgb, 1)
         
-        for idx,cnt in enumerate(self.dict['contours']['minBoundingBox']): 
+        for idx,cnt in enumerate(self.dict['contours']['minBoundingBox']):
+            if idx > len(self.dict['contours']['color'])-1:
+                print('azz')
+
             rgb = self.dict['contours']['color'][idx]
             box = cv2.boxPoints(cnt)
             box = np.int0(box)
@@ -668,9 +707,9 @@ class blocks(base,object):
             coordinates = self.dict['persistentModel'][blockName]['coordinatesIndexes']
             ROIindex = self.dict['persistentModel'][blockName]['ROIindex']
             
-            for index in coordinates:
-                try: cv2.drawContours(frame,[self.dict['ROI']['coordinateBoxesNumPy'][ROIindex][index]],-1,(255,255,255),1)
-                except: pass
+            # for index in coordinates:
+            #     try: cv2.drawContours(frame,[self.dict['ROI']['coordinateBoxesNumPy'][ROIindex][index]],-1,(255,255,255),1)
+            #     except: pass
                 # try:
                 #     center = self.dict['ROI']['coordinateCenter'][ROIindex][index]
                 #     cv2.circle(frame, (center[0],center[1]), 1 , (255,255,255), 2)
@@ -681,8 +720,9 @@ class blocks(base,object):
                 rgb = self.dict['persistentModel'][blockName]['color']
                 box = cv2.boxPoints(cnt)
                 box = np.int0(box)
-                cv2.drawContours(frame,[box],0,rgb,2)
-                cv2.putText(frame, str(idx+1) ,(box[1][0]-10,box[1][1]-10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, rgb, 1)
+                thickenss = 3 if self.dict['persistentModel'][blockName]['blocked'] else 2
+                cv2.drawContours(frame,[box],0,rgb,thickenss)
+                cv2.putText(frame,blockName.replace("blocco","") ,(box[1][0]-10,box[1][1]-10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, rgb, 1)
             
                 if not(self.dict['persistentModel'][blockName]['positionList']==[]): 
                     lenght = len(self.dict['persistentModel'][blockName]['positionList']) - 1     
@@ -694,19 +734,10 @@ class blocks(base,object):
                             cv2.line(frame,(item[0],item[1]),(item2[0],item2[1]),rgb,2)
                         except Exception as e: print(e)
 
-
-
         
-        if len(self.dict['handPosition'])>3:
-            cv2.circle(frame, self.dict['handPosition'][-1], 1 , [255,0,0], 2)
-            cv2.line(frame,self.dict['handPosition'][-1],self.dict['handPosition'][-2],[255,0,0],2)
-            cv2.circle(frame, self.dict['handPosition'][-2], 1 , [255,0,0], 2)
-            cv2.line(frame,self.dict['handPosition'][-2],self.dict['handPosition'][-3],[255,0,0],2)
-            cv2.circle(frame, self.dict['handPosition'][-3], 1 , [255,0,0], 2)
-            cv2.line(frame,self.dict['handPosition'][-3],self.dict['handPosition'][-4],[255,0,0],2)
-
         self.dict['oldContours'] = copy.copy(self.dict['contours'])
-        self.dict['contours']={'contours':[],'color':[],'type':[],'boundingBox':[],'minBoundingBox':[],'areas':[],'ROI':[],'center':[],'ROImovement':[],'ROIhand':[],'ROIindex':[]}
+        self.dict['oldContoursExist'] = True
+        self.dict['contours']={'contours':[],'color':[],'type':[],'boundingBox':[],'minBoundingBox':[],'areas':[],'ROI':[],'center':[],'ROImovement':[],'ROIhand':[],'ROIindex':[],'movement':[]}
         
 
         return frame
@@ -723,25 +754,23 @@ class blocks(base,object):
             else: self.dict['ROI']['movement'].append(False)
         
 
-    def handDetection(self,handPos,handCoordinates):
+    def handDetection(self,handPos):
        
         self.dict['ROI']['hand']=[]
         
-        self.dict['handPosition'].append(handCoordinates)
-
         for idx,ROI in enumerate(self.dict['ROI']['box']): 
             imgROI = handPos[ ROI[0][1]:ROI[2][1],ROI[0][0]:ROI[2][0]]                 
             count = cv2.countNonZero(imgROI)
             if count>0: self.dict['ROI']['hand'].append(True)
             else: self.dict['ROI']['hand'].append(False)
-        
 
-        
 
     def detectMinBoundingBoxes(self):
 
-        for cnt in self.dict['contours']['contours']:
-            self.dict['contours']['minBoundingBox'].append(cv2.minAreaRect(cnt))
+        for idx,cnt in enumerate(self.dict['contours']['contours']):
+            self.dict['contours']['minBoundingBox'][idx]= cv2.minAreaRect(cnt)
+            
+
 
     def detectType(self):
         
@@ -753,10 +782,9 @@ class blocks(base,object):
             else: self.dict['contours']['type'].append('larger than 2x3')
 
 
-    def handFiltering(self,handMask):
-        
-        pass
+ 
 
+    
     def sizeFiltering(self):
         
         for idx,c in enumerate(self.dict['contours']['contours']):
@@ -766,6 +794,55 @@ class blocks(base,object):
 
         self.removeContours()  
     
+    def adjustBlockPosInWa(self,blockName,idx):
+        
+        block = self.dict['persistentModel'][blockName]
+        if not(self.dict['contours']['ROI'][idx]=='areaFirst'): return
+        #elif not(block['blocked']):return
+        elif self.dict['contours']['ROIhand'][idx]:return
+        
+        a=1
+        b=2
+        betterRatio = False
+        betterOrientation = False
+        betterArea = False
+        sameArea = False
+
+        #check area distance
+        e = (int( abs(block['area'] - self.dict[block['type']]['value']) ) /10 )*10
+        f = ( int(abs(self.dict['contours']['areas'][idx] - self.dict[block['type']]['value']))/10)*10
+        betterArea = f<e
+        sameArea = f==e
+           
+        #check orientation and edge ratio         
+        if (block['type']=='2x1' or block['type']=='2x4'):
+            if abs(block['minBBox'][2])>45:
+                a = 0.5 - abs(block['minBBox'][1][0] / block['minBBox'][1][1])
+                b = 0.5 - abs(self.dict['contours']['minBoundingBox'][idx][1][0] / self.dict['contours']['minBoundingBox'][idx][1][1])
+                betterRatio = a-b>0.15
+                c = abs(block['minBBox'][2])
+                d = abs(self.dict['contours']['minBoundingBox'][idx][2])
+                betterOrientation = c-d<0
+            elif abs(block['minBBox'][2])<45:   
+                a = 2 - abs(block['minBBox'][1][0] / block['minBBox'][1][1])
+                b = 2 - abs(self.dict['contours']['minBoundingBox'][idx][1][0] / self.dict['contours']['minBoundingBox'][idx][1][1])
+                betterRatio = a-b>0.15
+                c = abs(block['minBBox'][2])
+                d = abs(self.dict['contours']['minBoundingBox'][idx][2])
+                betterOrientation = c-d>0
+        elif block['type']=='2x2':
+            a = 1 - abs(block['minBBox'][1][0] / block['minBBox'][1][1])
+            b = 1 - abs(self.dict['contours']['minBoundingBox'][idx][1][0] / self.dict['contours']['minBoundingBox'][idx][1][1])
+            betterRatio = a-b>0.15
+            c = abs(block['minBBox'][2])
+            d = abs(self.dict['contours']['minBoundingBox'][idx][2])
+            betterOrientation = c-d<0 if abs(block['minBBox'][2])>45 else c-d>0
+
+        if (((betterRatio or betterOrientation) and sameArea) or betterArea): 
+            self.applyBlock(blockName,idx)
+            block['adjusted']=True
+
+
     def setContoursToRemove(self,idx):
 
         self.dict['contours']['contours'][idx]='remove'
@@ -773,8 +850,14 @@ class blocks(base,object):
         self.dict['contours']['color'][idx]='remove'
         self.dict['contours']['center'][idx]='remove'
         self.dict['contours']['ROI'][idx]='remove'
+        self.dict['contours']['ROImovement'][idx]='remove'
+        self.dict['contours']['ROIhand'][idx]='remove'
         self.dict['contours']['ROIindex'][idx]='remove'
         self.dict['contours']['type'][idx]='remove'
+        self.dict['contours']['movement'][idx]='remove'
+        self.dict['contours']['minBoundingBox'][idx]='remove'
+
+
     
     def removeContours(self):
 
@@ -787,10 +870,8 @@ class blocks(base,object):
         self.dict['contours']['ROIhand'][:] = [item for item in self.dict['contours']['ROIhand'] if item != 'remove']
         self.dict['contours']['ROIindex'][:] = [item for item in self.dict['contours']['ROIindex'] if item != 'remove']
         self.dict['contours']['type'][:] = [item for item in self.dict['contours']['type'] if item != 'remove']
-
-    def center(self):
-        #positionXY calculate centers from contours
-        pass
+        self.dict['contours']['movement'][:] = [item for item in self.dict['contours']['movement'] if item != 'remove']
+        self.dict['contours']['minBoundingBox'][:] = [item for item in self.dict['contours']['minBoundingBox'] if item != 'remove']
 
     def detectPosition(self):
         
@@ -819,23 +900,46 @@ class blocks(base,object):
         for blockName in self.dict['persistentModel']:
             
             block = self.dict['persistentModel'][blockName] 
+            
+            if len(block['ROIHistory'])>3:
+                a = block['ROIHistoryTimeStamp'][-1]
+                b = block['ROIHistoryTimeStamp'][-2]
+                alist = a.split(':')
+                blist = b.split(':')
+                alist = list(map(int,alist))
+                blist = list(map(int,blist))
+                a = alist[0]*60 + alist[1] + alist[2]/100
+                b = blist[0]*60 + blist[1] + blist[2]/100
+                if a-b<2:
+                    block['ROIHistoryTimeStamp'][-2] = block['ROIHistoryTimeStamp'][-1]
+                    block['ROIHistory'][-2] = block['ROIHistory'][-1]
+                    del block['ROIHistoryTimeStamp'][-1]
+                    del block['ROIHistory'][-1]
 
+            if block['adjusted']:
+                print('adjusted')
+                block['ROIHistory'][-1] = block['ROI']
+                block['checkProcedure'] = True
+                block['adjusted']=False
+                continue
+            
             if not(block['ROI']=='undetected'):
                 if not(block['ROIHistory'][-1:]==[block['ROI']]): 
                     block['ROIHistory'].append(block['ROI'])
+                    block['ROIHistoryTimeStamp'].append(self.getStamp())
                     block['checkProcedure'] = True
                 else: block['checkProcedure'] = False
                 if not(block['ROI']==block['lastDtcROI']): 
                     block['lastROI'] = block['lastDtcROI'] 
                 block['lastDtcROI'] = block['ROI']
-            if not(block['ROI']==block['lastDtcROI']): 
-                block['movement']=True                
-            else : 
-                block['movement'] = False
 
             block['ROI'] = 'undetected'
 
+
     def twoPDistance(self,point1,point2):
+        # rtrnNum = 1000
+        # try: rtrnNum = abs(point1[0]-point2[0])+abs(point1[1]-point2[1])
+        # except exception:
         return abs(point1[0]-point2[0])+abs(point1[1]-point2[1])
     
     def convertPersModToNP(self):
@@ -865,21 +969,58 @@ class blocks(base,object):
             block['timeList'],
             block['deleteList']] for (key,block) in self.dict['persistentModel'].items()],dtype=object)
 
-    def PMassociateDetectedAndExpected(self):
+    
+    def removeContoursInBlockedBlocks(self):
 
+        for blockName in self.dict['persistentModel']:
+            value = 1
+            #if not(self.dict['persistentModel'][blockName]['blocked']): continue
+            
+            if self.dict['blockInMovement']==blockName:continue
+            if not(self.dict['persistentModel'][blockName]['blocked']): value = 1          
+            block = self.dict['persistentModel'][blockName]
+            if block['minBBox']=='': continue
+            block['deletedContourn']=False
+
+            removeQuestion = False
+       
+            if abs(block['minBBox'][2])<45:
+                halfW = np.divide(block['minBBox'][1][0],2) 
+                halfH = np.divide(block['minBBox'][1][1],2)
+            else:
+                halfW = np.divide(block['minBBox'][1][1],2)
+                halfH = np.divide(block['minBBox'][1][0],2)
+
+            ll = np.int0([block['minBBox'][0][0]-halfW/value,block['minBBox'][0][1]-halfH/value])  #lowerleft
+            ur = np.int0([block['minBBox'][0][0]+halfW/value,block['minBBox'][0][1]+halfH/value])  # upper-right
+
+            if len(self.dict['contours']['center'])>0:
+                inidx = np.all(np.logical_and(ll <= self.dict['contours']['center'], self.dict['contours']['center'] <= ur), axis=1)
+                deleteIndexes = np.nonzero(inidx)[0]
+
+                if len(deleteIndexes)>0: 
+                    block['deletedContourn']=True
+
+                for idx in deleteIndexes:
+                    sameColor = self.dict['contours']['color'][idx] == block['color']
+                    if sameColor:
+                        self.adjustBlockPosInWa(blockName,idx) 
+                        self.setContoursToRemove(idx) 
+                        removeQuestion = True
+                        
+            if removeQuestion: self.removeContours()  
+
+    def PMassociateDetectedAndExpected(self):
+        
         for idx,contours in enumerate(self.dict['contours']['contours']):  
            
             cntHndMvmnt = self.dict['contours']['ROIhand'][idx]
             cntMvmnt = self.dict['contours']['ROImovement'][idx] 
             cntRoiUndt = self.dict['contours']['ROI'][idx] == 'undetected'
-                      
-
+            
             for blockName in self.dict['persistentModel']:
-
-                block = self.dict['persistentModel'][blockName]
                 
-
-
+                block = self.dict['persistentModel'][blockName]
                 sameColor = self.dict['contours']['color'][idx] == block['color']
                 
                 if not(block['ROI'] == 'undetected'): continue
@@ -887,28 +1028,30 @@ class blocks(base,object):
                 elif not(sameColor): continue
                 
                 sameType = self.dict['contours']['type'][idx] == block['type']    
-
+                
                 distance = 20
 
-                if (not(block['center']=='')):       
+                # if not(block['center']==''):       
                     
-                    distance = self.twoPDistance(block['center'],self.dict['contours']['center'][idx])
+                #     distance = self.twoPDistance(block['center'],self.dict['contours']['center'][idx])
 
-                    if distance < 4: 
-                        block['ROI'] = block['ROIHistory'][-1]
-                        if not(block['positionList'] == []):block['deleteList'] = True
-                        break 
-
+                #     if distance < 4: 
+                #         block['ROI'] = block['ROIHistory'][-1]
+                #         if not(block['positionList'] == []):block['deleteList'] = True
+                #         break 
 
                 if (sameType and not(cntRoiUndt) and not(cntHndMvmnt) and not(cntMvmnt)): 
-                    
-                    block['ROI'] = self.dict['contours']['ROI'][idx]
-                    block['ROIindex'] = self.dict['contours']['ROIindex'][idx]
-                    block['minBBox'] = self.dict['contours']['minBoundingBox'][idx]
-                    block['center'] = self.dict['contours']['center'][idx]
-                    self.calculateCoordinates(idx,blockName)
-                    if not(block['positionList'] == []):block['deleteList'] = True
-                    break 
+
+                    block['confidence2'] += 1
+                    if block['confidence2'] > 5:
+                        block['ROI'] = self.dict['contours']['ROI'][idx]
+                        block['ROIindex'] = self.dict['contours']['ROIindex'][idx]
+                        block['minBBox'] = self.dict['contours']['minBoundingBox'][idx]
+                        block['center'] = self.dict['contours']['center'][idx]
+                        self.calculateCoordinates(idx,blockName)
+                        if not(block['positionList'] == []):block['deleteList'] = True
+                        block['confidence2']=0
+                        break 
 
 
                 if (cntHndMvmnt or cntMvmnt) :
@@ -917,30 +1060,15 @@ class blocks(base,object):
                         block['positionList'].append(block['center'])
                         block['timeList'].append(self.getStamp())
                     
-                    distance = self.twoPDistance(block['positionList'][-1],self.dict['contours']['center'][idx])
+                    if block['positionList'][-1]=='' or self.dict['contours']['center'][0] =='': distance =1000
+                    else: distance = self.twoPDistance(block['positionList'][-1],self.dict['contours']['center'][0])
 
-
-                    if distance > 10 and distance < 100 :
-                        block['positionList'].append(self.dict['contours']['center'][idx])
-                        block['timeList'].append(self.getStamp())
-                        continue 
+                    # if distance > 5 and distance < 100 :
+                    #     block['positionList'].append(self.dict['contours']['center'][idx])
+                    #     block['timeList'].append(self.getStamp())
+                    #     break
                 
-                        
-                    # if not(block['minBBox']==''):                    
-                    #     boxBlock = cv2.boxPoints(block['minBBox'])
-                    #     contournBlock =  cv2.boxPoints(self.dict['contours']['minBoundingBox'][idx])
-                    #     partOfTheSameBlock = [False,False,False,False]
-                        
-                    #     partOfTheSameBlock[0] = True if self.twoPDistance(boxBlock[0],contournBlock[0]) < 5 else False
-                    #     partOfTheSameBlock[1] = True if self.twoPDistance(boxBlock[1],contournBlock[1]) < 5 else False
-                    #     partOfTheSameBlock[2] = True if self.twoPDistance(boxBlock[2],contournBlock[2]) < 5 else False
-                    #     partOfTheSameBlock[3] = True if self.twoPDistance(boxBlock[3],contournBlock[3]) < 5 else False
-
-                    #     partOftheSameBro = True if  partOfTheSameBlock.count(True)>1 else False               
-                    # else: 
-                    #     partOftheSameBro = False
-
-                    if distance < 10 and (sameType ):
+                    if distance < 5 and sameType:
                         block['confidence1'] += 1
                         if block['confidence1'] > 10:
                             block['ROI'] = self.dict['contours']['ROI'][idx]
@@ -950,23 +1078,119 @@ class blocks(base,object):
                             self.calculateCoordinates(idx,blockName)
                             if not(block['positionList'] == []):block['deleteList'] = True
                             block['confidence1']=0
-                            continue
-                                                
-                    elif (sameType ):
-                        block['confidence3'] += 1
-                        if block['confidence3'] > 50:
+                            break
+                    
+                    elif sameType:
+                        block['confidence1'] += 1
+                        if block['confidence1'] > 50:
                             block['ROI'] = self.dict['contours']['ROI'][idx]
                             block['ROIindex'] = self.dict['contours']['ROIindex'][idx]
                             block['minBBox'] = self.dict['contours']['minBoundingBox'][idx]
                             block['center'] = self.dict['contours']['center'][idx]
                             self.calculateCoordinates(idx,blockName)
                             if not(block['positionList'] == []):block['deleteList'] = True
-                            block['confidence3']=0
-                            continue
-                            
+                            block['confidence1']=0
+                            break
 
   
                 
+    def PMassociateDetectedAndExpected2(self):
+        if self.dict['blockInMovement']=='': 
+            for blockName in self.dict['persistentModel']:
+                               
+                block = self.dict['persistentModel'][blockName]
+                sameColor = self.dict['contours']['color'][0] == block['color']                   
+                if not(sameColor) or block['blocked']==True :continue
+                
+                if self.dict['contours']['ROI'][0] == block['lastDtcROI'] : 
+                    self.dict['blockInMovement']=blockName
+                    block['stopped']=False
+                    print(blockName+'on the move')
+                    break
+            
+            if self.dict['blockInMovement']=='':
+                for blockName in self.dict['persistentModel']:
+                    
+                    block = self.dict['persistentModel'][blockName]
+                    sameColor = self.dict['contours']['color'][0] == block['color']                   
+                    if not(sameColor) or block['blocked']==True :continue
+                    
+                    if block['deletedContourn']==False: 
+                        self.dict['blockInMovement']=blockName
+                        block['stopped']=False
+                        print(blockName+'on the move')
+                        break  
+       
+        else:
+
+            block = self.dict['persistentModel'][self.dict['blockInMovement']]
+            sameColor = self.dict['contours']['color'][0] == block['color'] 
+
+            if not(sameColor):
+                block['stopped']
+                self.dict['blockInMovement']=''
+
+            elif block['stopped']: 
+
+                if not(block['positionList']==[]): 
+                    block['positionList'].append(block['center'])
+                    block['timeList'].append(self.getStamp())
+                    
+                    distance = self.twoPDistance(block['positionList'][-1],self.dict['contours']['center'][0])
+                    sameType = self.dict['contours']['type'][0] == block['type']
+                    undetectedROI = self.dict['contours']['ROIindex'][0] == 'undetected'
+                    
+                    if distance>5 and not(undetectedROI):
+                        block['stopped']=False
+                        print(self.dict['blockInMovement']+'on the move')
+
+                    elif distance<2 and sameType and not(undetectedROI):
+                        block['confidence1']+=1
+                        if block['confidence1']>5:                       
+                            self.resetBlock(self.dict['blockInMovement'],0)
+                            self.dict['blockInMovement']=''
+                else:
+                    self.dict['blockInMovement']=''
+
+            else:
+
+                if block['positionList']==[]: 
+                    block['positionList'].append(block['center'])
+                    block['timeList'].append(self.getStamp())
+
+                if block['positionList'][-1]=='' or self.dict['contours']['center'][0] =='': distance =1000
+                else: distance = self.twoPDistance(block['positionList'][-1],self.dict['contours']['center'][0])
+               
+                sameType = self.dict['contours']['type'][0] == block['type'] 
+                undetectedROI = self.dict['contours']['ROIindex'][0] == 'undetected'
+                
+                if distance<1: block['confidence1']+=5
+                elif distance<2: block['confidence1']+=4
+                elif distance<3: block['confidence1']+=3
+                elif distance<4: block['confidence1']+=2
+                elif distance<5: block['confidence1']+=1
+                elif distance<6: block['confidence1']-=1
+                elif distance<7: block['confidence1']-=2
+                elif distance<8: block['confidence1']-=3
+                elif distance<9: block['confidence1']-=4
+                elif distance<10: block['confidence1']-=5
+                else: block['confidence1']=0
+                   
+                if block['confidence1']>30 and sameType and not(undetectedROI): 
+                    block['stopped']=True
+                    print(self.dict['blockInMovement']+'stopped')
+                    self.applyBlock(self.dict['blockInMovement'],0)
+                    self.resetBlock(self.dict['blockInMovement'],0)
+                
+                if block['confidence1']>60 and not(undetectedROI):
+                    block['stopped']=True
+                    print(self.dict['blockInMovement']+'stopped')
+                    self.applyBlock(self.dict['blockInMovement'],0)
+                    block['confidence1']=0
+
+                else:
+                    block['positionList'].append(self.dict['contours']['center'][0])
+                    block['timeList'].append(self.getStamp())
 
     def applyBlock(self,blockName,idx):
 
@@ -974,14 +1198,17 @@ class blocks(base,object):
         block['ROI'] = self.dict['contours']['ROI'][idx]
         block['ROIindex'] = self.dict['contours']['ROIindex'][idx]
         block['minBBox'] = self.dict['contours']['minBoundingBox'][idx]
+        block['area'] = self.dict['contours']['areas'][idx]
         block['center'] = self.dict['contours']['center'][idx]
         self.calculateCoordinates(idx,blockName)
+
+           
+    def resetBlock(self,blockName,idx):
+
+        block = self.dict['persistentModel'][blockName]
         if not(block['positionList'] == []):block['deleteList'] = True
         block['confidence1']=0
         block['confidence2']=0
-        block['confidence3']=0
-           
-
   
     
 
@@ -989,6 +1216,8 @@ class blocks(base,object):
     def calculateCoordinates(self,idx,blockName):
 
         block = self.dict['persistentModel'][blockName]
+        
+        if self.dict['contours']['ROIindex'][idx]=='undetected': return
 
         if self.dict['ROI']['coordinatesToggle'][self.dict['contours']['ROIindex'][idx]]:
                             
@@ -1038,6 +1267,7 @@ class blocks(base,object):
              block['center']=''
              block['contoursID']=''
              block['ROIHistory']=[]
+             block['ROIHistoryTimeStamp']=[]
              block['coordinatesIndexes']=[]
              block['coordinatesFirst'] = []
              block['coordinatesLast'] = []
@@ -1049,7 +1279,10 @@ class blocks(base,object):
              block['deleteList']=False
              block['confidence1']=0
              block['confidence2']=0
-             block['confidence3']=0
+             block['stopped']=True
+             block['deletedContourn']=False
+             block['area']=0
+             block['adjusted']=False
 
     def getStamp(self): 
         
@@ -1079,7 +1312,8 @@ class blocks(base,object):
                             block['timeList'] = []
                             block['deleteList'] = False
                         else:
-                            task['timestamp']=copy.copy(self.getStamp())
+                            #task['timestamp']=copy.copy(self.getStamp())
+                            task['timestamp']=copy.copy(block['ROIHistoryTimeStamp'][-1])
 
     def cleanPositionList(self):
 
@@ -1089,6 +1323,7 @@ class blocks(base,object):
                 block['positionList'] = []
                 block['timeList'] = []
                 block['deleteList'] = False
+                block['lastContourIndex'] = 0
 
     def cleanProceduralTaskModel(self):
         
@@ -1100,13 +1335,15 @@ class blocks(base,object):
          
     def process(self):
         
-        #self.sizeFiltering()
+        self.sizeFiltering()
         self.detectMinBoundingBoxes()
-        self.detectType()
         self.detectPosition()
+        self.removeContoursInBlockedBlocks()        
+        self.detectType()
         
         if self.dict['persistentModelToggle']['value']: 
-            self.PMassociateDetectedAndExpected()
+            if len(self.dict['contours']['contours'])>1:self.PMassociateDetectedAndExpected()
+            elif len(self.dict['contours']['contours'])==1:self.PMassociateDetectedAndExpected2()
             self.PMcompute()
         else: self.cleanPersistentModel()
         

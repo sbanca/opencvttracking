@@ -3,10 +3,11 @@ import interfaceWrapper as intWr
 import cv2
 from pipeline import Masks,Trims,bckSub,Thresh,Bins,wAreas,Blocks
 
+video = 'videos/blocks6.avi'
 
 def test5():
 
-    cap0 = cv2.VideoCapture('videos/blocks4.avi')
+    cap0 = cv2.VideoCapture(video)
 
     Main = cvW.base('Main')
     Main.config(name='Main', saveButton = {'interface':True,'widget':'button','command':'saveobject'})
@@ -22,9 +23,10 @@ def test5():
 test5()
 
 
+
 def test4():
 
-    cap = cv2.VideoCapture('videos/camera2.2.avi')
+    cap = cv2.VideoCapture(video)
 
     Main = cvW.base('Main')
 
@@ -42,18 +44,17 @@ def test4():
 
 def test3():
 
-    cap = cv2.VideoCapture('videos/camera2.2.avi')
+    cap = cv2.VideoCapture(video)
 
 
     newWindow = intWr.interface()
 
     # newWindow.config(obj=Masks['Blue Mask'],pipelines=['pipelineBlue'],media=[cap])
     # newWindow.config(obj=Masks['Yellow Mask'],pipelines=['pipelineYellow'],media=[cap])
-    # newWindow.config(obj=Masks['Red Mask'],pipelines=['pipelineRed'],media=[cap])
-    # newWindow.config(obj=Masks['Green Mask'],pipelines=['pipelineGreen'],media=[cap])
-    # newWindow.config(obj=Masks['Hand'],pipelines=['pipelineHand'],media=[cap])
-    newWindow.config(obj=Trims['Trim'],pipelines=['TrimWarp'],media=[cap])
-    # newWindow.config(obj=Trims['Trim2'],pipelines=['TrimWorkArea'],media=[cap])
+    newWindow.config(obj=Masks['Red Mask'],pipelines=['pipelineRed'],media=[cap])
+    #newWindow.config(obj=Masks['Green Mask'],pipelines=['pipelineGreen'],media=[cap])
+    #newWindow.config(obj=Masks['Hand'],pipelines=['pipelineHand'],media=[cap])
+    #newWindow.config(obj=Trims['Trim'],pipelines=['TrimWarp'],media=[cap])
     # newWindow.config(obj=bckSub['bckSub'],pipelines=['bckSub','BGR2RGB'],media=[cap,cap])
     # newWindow.config(obj=Thresh['one'],pipelines=['thresh'],media=[cap])
     # newWindow.config(obj=Bins['twelveth'],pipelines=['Bins'],media=[cap])
@@ -61,7 +62,7 @@ def test3():
     newWindow.initialise()
     newWindow.create()
 
-    #windows={}
+    # windows={}
 
     # for maskKey in Masks:
     #     windows[maskKey] = intWr.interface()

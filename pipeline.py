@@ -3,7 +3,7 @@ import cv2
 import cvWrapper as cvW
 import numpy as np
 
-
+filename = 'blocks4.json'
 
 # initialise masks
 ####################
@@ -11,19 +11,19 @@ import numpy as np
 Masks = {}
 
 Masks['Blue Mask'] = cvW.HSVMask('Blue Mask')
-Masks['Blue Mask'].dictToJson('file.json',mode='load')
+Masks['Blue Mask'].dictToJson(filename,mode='load')
 
 Masks['Red Mask'] = cvW.HSVMask('Red Mask')
-Masks['Red Mask'].dictToJson('file.json',mode='load')
+Masks['Red Mask'].dictToJson(filename,mode='load')
 
 Masks['Green Mask'] = cvW.HSVMask('Green Mask')
-Masks['Green Mask'].dictToJson('file.json',mode='load')
+Masks['Green Mask'].dictToJson(filename,mode='load')
 
 Masks['Yellow Mask'] = cvW.HSVMask('Yellow Mask')
-Masks['Yellow Mask'].dictToJson('file.json',mode='load')
+Masks['Yellow Mask'].dictToJson(filename,mode='load')
 
 Masks['Hand'] = cvW.HSVMask('Hand')
-Masks['Hand'].dictToJson('file.json',mode='load')
+Masks['Hand'].dictToJson(filename,mode='load')
 
 # initialise trims
 ####################
@@ -31,11 +31,11 @@ Masks['Hand'].dictToJson('file.json',mode='load')
 Trims = {}
 
 Trims['Trim'] = cvW.trimmer('Trim')
-Trims['Trim'].dictToJson('file.json',mode='load')
+Trims['Trim'].dictToJson(filename,mode='load')
 Trims['Trim'].initialise()
 
 Trims['Trim2'] = cvW.trimmer('Trim2')
-Trims['Trim2'].dictToJson('file.json',mode='load')
+Trims['Trim2'].dictToJson(filename,mode='load')
 Trims['Trim2'].initialise()
 
 # initialise Background Subtraction
@@ -44,7 +44,7 @@ Trims['Trim2'].initialise()
 bckSub = {}
 
 bckSub['bckSub'] = cvW.bckSub('bckSub')
-bckSub['bckSub'].dictToJson('file.json',mode='load')
+bckSub['bckSub'].dictToJson(filename,mode='load')
 
 # initialise thresh
 ###################################
@@ -61,14 +61,15 @@ BinList = ['first','second','third','fourth','fifth','sixth','seventh','eight','
 
 for binname in BinList:
     Bins[binname] = cvW.binbox(binname)
-    Bins[binname].dictToJson('file.json',mode='load')
+    Bins[binname].dictToJson(filename,mode='load')
 
 wAreas = {}
-wAreaList = ['areaFirst','areaSecond','areaThird','areaFourth']
+#wAreaList = ['areaFirst','areaSecond','areaThird','areaFourth']
+wAreaList = ['areaFirst']
 
 for wArea in wAreaList:
     wAreas[wArea] = cvW.binbox(wArea)
-    wAreas[wArea].dictToJson('file.json',mode='load')
+    wAreas[wArea].dictToJson(filename,mode='load')
 
 
 #initialiseBlocks
@@ -138,8 +139,8 @@ class pipeline(cvW.base,object):
     def hand(self): 
         self.frame,contours = Masks['Hand'].process(self.hsv,self.frame)
         self.handImage = np.copy(self.blankImage)
-        self.handImage,self.frame,self.handPosition = Masks['Hand'].mostSomenthing(self.handImage,self.frame) 
-        Blocks.handDetection(self.handImage,self.handPosition)
+        self.handImage,self.frame = Masks['Hand'].mostSomenthing(self.handImage,self.frame) 
+        Blocks.handDetection(self.handImage)
 
     def bckSub(self): 
         self.bckSub = bckSub['bckSub'].process(self.frame)
@@ -152,9 +153,10 @@ class pipeline(cvW.base,object):
     
     def thresh(self): self.thresh = Thresh['one'].process(self.gray)
 
-    def filterHand(self): Blocks.handFiltering(self.handImage2)
+    def filterHand(self): 
+        Blocks.handFiltering(self.handImage2)
 
-    def blocksRepres(self): Blocks.process()
+    def blocksRepres(self):Blocks.process()
 
     def renderROIs(self):
         #Blocks.detectPosition()
@@ -210,13 +212,13 @@ pipelinesList['Trim'] = pipeline()
 pipelinesList['thresh'] = pipeline()
 pipelinesList['pipelineTest'].config(BGR2RGB=True)
 pipelinesList['pipelineYellow'].config(blur=True,hsv=True,yellowMask=True,BGR2RGB=True)
-pipelinesList['pipelineBlue'].config(blur=True,hsv=True,blueMask=True,BGR2RGB=True,gray=True,thresh=True)
+pipelinesList['pipelineBlue'].config(Trim=True,blur=True,hsv=True,blueMask=True,BGR2RGB=True,gray=True,thresh=True)
 pipelinesList['pipelineRed'].config(Trim=True,blur=True,hsv=True,redMask=True,BGR2RGB=True)
 pipelinesList['pipelineGreen'].config(Trim=True,blur=True,hsv=True,greenMask=True,BGR2RGB=True)
 pipelinesList['pipelineHand'].config(Trim=True,blur=True,gray=True,hsv=True,hand=True,BGR2RGB=True)
 pipelinesList['TrimWarp'] = pipeline()
 pipelinesList['TrimWarp'].config(Trim=True,BGR2RGB=True)
-pipelinesList['Trim'].config(Trim=True,blur=True,hsv=True,bckSub=True,hand=True,blueMask=True,redMask=True,greenMask=True,yellowMask=True,blocksRepres=True,renderROIs=True,BGR2RGB=True)
+pipelinesList['Trim'].config(Trim=True,blur=True,hsv=True,bckSub=False,hand=True,blueMask=True,redMask=True,greenMask=True,yellowMask=True,blocksRepres=True,renderROIs=True,BGR2RGB=True)
 pipelinesList['thresh'].config(Trim2=True,gray=True,thresh=True)
 pipelinesList['bckSub'] = pipeline()
 pipelinesList['bckSub'].config(Trim=True,bckSub=True)

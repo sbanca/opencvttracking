@@ -2,7 +2,7 @@ import cv2
 from tkinter import *
 from tkinter import ttk
 from PIL import Image, ImageTk
-from pipeline import pipelinesList, Blocks
+from pipeline import pipelinesList, Blocks, filename
 import copy
 import time
 import datetime
@@ -174,7 +174,7 @@ class interface:
 
         self.widgets[key] = ttk.Button(self.frames['buttonFrame'],text=key)
 
-        if self.dict['obj'].dict[key]['command'] == 'saveobject': self.widgets[key].config(command= lambda : self.dict['obj'].dictToJson('file.json',mode='save'))
+        if self.dict['obj'].dict[key]['command'] == 'saveobject': self.widgets[key].config(command= lambda : self.dict['obj'].dictToJson(filename,mode='save'))
         if self.dict['obj'].dict[key]['command'] == 'toggleBoolean': self.widgets[key].config(command= lambda : self.toggleBoolean(key)) 
 
         self.widgets[key].pack(side=TOP,padx=10,pady=10)
@@ -283,12 +283,15 @@ class interface:
         
         performanceList = []
         performanceSummary = ' '
+        total = 0
 
         for timer in pipelinesList[self.pipelines[key]].stageTimers:
             if timer in pipelinesList[self.pipelines[key]].stageTimers.keys():
                 if pipelinesList[self.pipelines[key]].dict[timer]:
+                    total = total + pipelinesList[self.pipelines[key]].stageTimers[timer].timer
                     performanceList.append( pipelinesList[self.pipelines[key]].stageTimers[timer].label + ' ' +  str(pipelinesList[self.pipelines[key]].stageTimers[timer].timer)[:6] + '  ')
 
+        performanceList.append( ' FrameRate: ' +  str(1/total)[:2] + ' Hz ')
         self.performance[key+'Text'].set(performanceSummary.join(performanceList))
 
     def blocchiUpdate(self,key):
