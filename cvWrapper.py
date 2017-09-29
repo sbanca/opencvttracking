@@ -7,7 +7,8 @@ import numpy as np
 import os.path
 import json
 import copy
-
+import matplotlib.pyplot as plt
+from scipy.signal import lfilter
 
 
 class timingPerformance:
@@ -255,7 +256,7 @@ class HSVMask(base,object):
                 pass
     
     def mostSomenthing(self,frameProcess,frameReppres):
-        
+        most = 0 
         value = self.dict['maxMinPoint']['value']
 
         for cnt in self.contours:
@@ -270,7 +271,7 @@ class HSVMask(base,object):
             cv2.circle(frameProcess,most,5,[255,255,255],-1)
             cv2.circle(frameReppres,most,5,[0,255,0],-1)
         
-        return (frameProcess,frameReppres)
+        return (frameProcess,frameReppres,most)
 
 
 class Main(base,object):
@@ -429,21 +430,15 @@ class binbox(base,object):
 
         if self.dict['coordinatesToggle']['value']:
 
-             try: self.notSave.remove('translateCoordX') 
-             except Exception as e: print(e)
-             try: self.notSave.remove('revTransCoordX') 
-             except Exception as e: print(e)
-             try: self.notSave.remove('translateCoordY') 
-             except Exception as e: print(e)
-             try: self.notSave.remove('revTransCoordY') 
-             except Exception as e: print(e)
-             try: self.notSave.remove('cX') 
-             except Exception as e: print(e)
-             try: self.notSave.remove('cY') 
-             except Exception as e: print(e)
-             try: self.notSave.remove('coordinateBoxes') 
-             except Exception as e: print(e)
-
+            if 'translateCoordX' in self.notSave: self.notSave.remove('translateCoordX') 
+            if 'revTransCoordX' in self.notSave: self.notSave.remove('revTransCoordX') 
+            if 'translateCoordY' in self.notSave: self.notSave.remove('translateCoordY') 
+            if 'revTransCoordY' in self.notSave: self.notSave.remove('revTransCoordY') 
+            if 'translateCoordX' in self.notSave: self.notSave.remove('translateCoordX') 
+            if 'revTransCoordX' in self.notSave: self.notSave.remove('revTransCoordX') 
+            if 'cX' in self.notSave: self.notSave.remove('cX') 
+            if 'cY' in self.notSave: self.notSave.remove('cY') 
+            if 'coordinateBoxes' in self.notSave: self.notSave.remove('coordinateBoxes')
 
         else:
              self.notSave.append('translateCoordX')
@@ -534,10 +529,13 @@ class blocks(base,object):
         super(blocks, self).__init__( name )
         if not (object == None): self.referencedObject = object
         self.posAttrList = ['kind','name','BlockProp','AreaTopBound','AreaBottomBound','2x1','2x2','2x4','blocchi','persistentModelToggle','persistentModel','proceduralTask']
-        self.notSave = self.notSave = ['kind','name','contours','oldContours','ROI']
+        self.notSave = self.notSave = ['kind','name','contours','oldContours','ROI','handCoordinatesTimestamp','handCoordinates']
         self.dict['kind'] = 'blocks'
         self.dict['blockInMovement']=''
-        
+        self.dict['handCoordinatesX']=np.array([0])
+        self.dict['handCoordinatesY']=np.array([0])
+        self.dict['handCoordinatesTimestamp']=np.array([0])
+
         self.ts = time.time()
 
         self.dict['ROI'] ={'movementThresold':0,'center':[],'box':[],'name':[],'movement':[],'hand':[],'coordinatesToggle':[],'coordinatesX':[],'coordinatesY':[],'coordinateBoxes':[],'coordinateBoxesNumPy':[],'coordinateCenter':[],'cX':[],'cY':[]}
@@ -573,20 +571,24 @@ class blocks(base,object):
 
         self.dict['task'] = {'interface':True,'widget':'text'}
         self.dict['procedureToggle'] = {"value": True,"interface": True,"widget": "button","command": "toggleBoolean"}
-        self.dict['proceduralTask'] = {1:{'block':'blocco9','targetROI':'areaFirst AS,9 AV,10'},
-                                       2:{'block':'blocco3','targetROI':'areaFirst AS,11 AV,12'},
-                                       3:{'block':'blocco6','targetROI':'areaFirst AS,9 AT,12'},
-                                       4:{'block':'blocco12','targetROI':'areaFirst AS,13 AV,14'},
-                                       5:{'block':'blocco8','targetROI':'areaFirst AS,13 AT,14'},
-                                       6:{'block':'blocco2','targetROI':'areaFirst AQ,13 AR,14'},
-                                       7:{'block':'blocco5','targetROI':'areaFirst AO,13 AP,14'},
-                                       8:{'block':'blocco11','targetROI':'areaFirst AM,13 AN,14'},
+        self.dict['proceduralTask'] = {1:{'block':'blocco9','targetROI':'areaFirst AT,10 AW,11'},
+                                       2:{'block':'blocco3','targetROI':'areaFirst AT,10 AU,13'},
+                                       3:{'block':'blocco6','targetROI':'areaFirst AT,12 AW,13'},
+                                       4:{'block':'blocco12','targetROI':'areaFirst AV,14 AW,15'},
+                                       5:{'block':'blocco8','targetROI':'areaFirst AT,14 AU,15'},
+                                       6:{'block':'blocco2','targetROI':'areaFirst AR,14 AS,15'},
+                                       7:{'block':'blocco5','targetROI':'areaFirst AP,14 AQ,15'},
+                                       8:{'block':'blocco11','targetROI':'areaFirst AN,14 AO,15'},
                                        9:{'block':'blocco10','targetROI':'areaFirst AQ,15 AR,15'},
                                        10:{'block':'blocco1','targetROI':'areaFirst AU,15 AV,15'},
                                        11:{'block':'blocco7','targetROI':'areaFirst AO,15 AP,15'},
                                        12:{'block':'blocco4','targetROI':'areaFirst AM,15 AN,15'}}
 
         self.cleanProceduralTaskModel()
+        self.dict['movements']=[]
+        self.dict['movementsStamps']=[]
+        self.dict['movementsBlocks']=[]
+
         time.clock()
 
     def addContours(self,contours,color):
@@ -754,7 +756,7 @@ class blocks(base,object):
             else: self.dict['ROI']['movement'].append(False)
         
 
-    def handDetection(self,handPos):
+    def handDetection(self,handPos,handCoordinates):
        
         self.dict['ROI']['hand']=[]
         
@@ -763,7 +765,42 @@ class blocks(base,object):
             count = cv2.countNonZero(imgROI)
             if count>0: self.dict['ROI']['hand'].append(True)
             else: self.dict['ROI']['hand'].append(False)
+            if not(handCoordinates==0):
+                #distanceX =  abs(self.dict['handCoordinatesX'][-1] - handCoordinates[0])
+                #distanceY =  abs(self.dict['handCoordinatesY'][-1] - handCoordinates[1])
+                #if distanceX>5 or distanceY>5:
+                self.dict['handCoordinatesX'] = np.append(self.dict['handCoordinatesX'],handCoordinates[0] ) 
+                self.dict['handCoordinatesY'] = np.append(self.dict['handCoordinatesY'],handCoordinates[1] )
+                self.dict['handCoordinatesTimestamp'] = np.append(self.dict['handCoordinatesTimestamp'],self.getStampNum() )
 
+    def plottest(self):
+        
+        n = 200  # the larger n is, the smoother curve will be
+        b = [1.0 / n] * n
+        a = 1
+        handCoordinatesY = lfilter(b,a,self.dict['handCoordinatesY'][1:])
+
+        plt.plot(self.dict['handCoordinatesTimestamp'][1:],handCoordinatesY , 'k--', linewidth=0.2)
+
+        self.dict['colorPlot']={'blocco9':'r',
+                                        'blocco3':'g',
+                                        'blocco6':'b',
+                                        'blocco12':'y',
+                                        'blocco8':'r',
+                                        'blocco2':'g',
+                                        'blocco5':'b',
+                                        'blocco11':'y',
+                                        'blocco10':'y',
+                                        'blocco1':'g',
+                                        'blocco7':'r',
+                                        'blocco4':'b'}
+
+
+        for idx,movement in enumerate(self.dict['movements']):
+            plt.plot(self.dict['movementsStamps'][idx],self.dict['movements'][idx][:,1],  self.dict['colorPlot'][self.dict['movementsBlocks'][idx]])
+
+
+        plt.show()
 
     def detectMinBoundingBoxes(self):
 
@@ -917,7 +954,6 @@ class blocks(base,object):
                     del block['ROIHistory'][-1]
 
             if block['adjusted']:
-                print('adjusted')
                 block['ROIHistory'][-1] = block['ROI']
                 block['checkProcedure'] = True
                 block['adjusted']=False
@@ -1031,15 +1067,6 @@ class blocks(base,object):
                 
                 distance = 20
 
-                # if not(block['center']==''):       
-                    
-                #     distance = self.twoPDistance(block['center'],self.dict['contours']['center'][idx])
-
-                #     if distance < 4: 
-                #         block['ROI'] = block['ROIHistory'][-1]
-                #         if not(block['positionList'] == []):block['deleteList'] = True
-                #         break 
-
                 if (sameType and not(cntRoiUndt) and not(cntHndMvmnt) and not(cntMvmnt)): 
 
                     block['confidence2'] += 1
@@ -1058,15 +1085,10 @@ class blocks(base,object):
                      
                     if block['positionList']==[]: 
                         block['positionList'].append(block['center'])
-                        block['timeList'].append(self.getStamp())
+                        block['timeList'].append(self.getStampNum())
                     
                     if block['positionList'][-1]=='' or self.dict['contours']['center'][0] =='': distance =1000
                     else: distance = self.twoPDistance(block['positionList'][-1],self.dict['contours']['center'][0])
-
-                    # if distance > 5 and distance < 100 :
-                    #     block['positionList'].append(self.dict['contours']['center'][idx])
-                    #     block['timeList'].append(self.getStamp())
-                    #     break
                 
                     if distance < 5 and sameType:
                         block['confidence1'] += 1
@@ -1092,9 +1114,9 @@ class blocks(base,object):
                             block['confidence1']=0
                             break
 
-  
-                
+                 
     def PMassociateDetectedAndExpected2(self):
+
         if self.dict['blockInMovement']=='': 
             for blockName in self.dict['persistentModel']:
                                
@@ -1105,7 +1127,7 @@ class blocks(base,object):
                 if self.dict['contours']['ROI'][0] == block['lastDtcROI'] : 
                     self.dict['blockInMovement']=blockName
                     block['stopped']=False
-                    print(blockName+'on the move')
+                    print(blockName+' on the move')
                     break
             
             if self.dict['blockInMovement']=='':
@@ -1118,7 +1140,7 @@ class blocks(base,object):
                     if block['deletedContourn']==False: 
                         self.dict['blockInMovement']=blockName
                         block['stopped']=False
-                        print(blockName+'on the move')
+                        print(blockName+' on the move')
                         break  
        
         else:
@@ -1134,7 +1156,7 @@ class blocks(base,object):
 
                 if not(block['positionList']==[]): 
                     block['positionList'].append(block['center'])
-                    block['timeList'].append(self.getStamp())
+                    block['timeList'].append(self.getStampNum())
                     
                     distance = self.twoPDistance(block['positionList'][-1],self.dict['contours']['center'][0])
                     sameType = self.dict['contours']['type'][0] == block['type']
@@ -1142,7 +1164,7 @@ class blocks(base,object):
                     
                     if distance>5 and not(undetectedROI):
                         block['stopped']=False
-                        print(self.dict['blockInMovement']+'on the move')
+                        print(self.dict['blockInMovement']+' on the move')
 
                     elif distance<2 and sameType and not(undetectedROI):
                         block['confidence1']+=1
@@ -1156,7 +1178,7 @@ class blocks(base,object):
 
                 if block['positionList']==[]: 
                     block['positionList'].append(block['center'])
-                    block['timeList'].append(self.getStamp())
+                    block['timeList'].append(self.getStampNum())
 
                 if block['positionList'][-1]=='' or self.dict['contours']['center'][0] =='': distance =1000
                 else: distance = self.twoPDistance(block['positionList'][-1],self.dict['contours']['center'][0])
@@ -1178,19 +1200,19 @@ class blocks(base,object):
                    
                 if block['confidence1']>30 and sameType and not(undetectedROI): 
                     block['stopped']=True
-                    print(self.dict['blockInMovement']+'stopped')
+                    print(self.dict['blockInMovement']+' stopped')
                     self.applyBlock(self.dict['blockInMovement'],0)
                     self.resetBlock(self.dict['blockInMovement'],0)
                 
                 if block['confidence1']>60 and not(undetectedROI):
                     block['stopped']=True
-                    print(self.dict['blockInMovement']+'stopped')
+                    print(self.dict['blockInMovement']+' stopped')
                     self.applyBlock(self.dict['blockInMovement'],0)
                     block['confidence1']=0
 
                 else:
                     block['positionList'].append(self.dict['contours']['center'][0])
-                    block['timeList'].append(self.getStamp())
+                    block['timeList'].append(self.getStampNum())
 
     def applyBlock(self,blockName,idx):
 
@@ -1292,7 +1314,8 @@ class blocks(base,object):
         minutes = int(sec/60)
         stringa = str(minutes) + ':' + str(sec%60)+':'+str(milli)
         return stringa
-
+    
+    def getStampNum(self): return time.clock()
     def checkProcederualTask(self):
         
         for blockName in self.dict['persistentModel']:
@@ -1308,13 +1331,20 @@ class blocks(base,object):
                         lunghezz = len(block['positionList'])
                         if block['deleteList']:                            
                             task['timestamp']=copy.copy(block['timeList'][lunghezz-1])
+                            self.copyToMovements(block['positionList'],block['timeList'],blockName)
                             block['positionList'] = []
                             block['timeList'] = []
                             block['deleteList'] = False
                         else:
-                            #task['timestamp']=copy.copy(self.getStamp())
                             task['timestamp']=copy.copy(block['ROIHistoryTimeStamp'][-1])
 
+    
+    def copyToMovements(self,positionList,timeList,blockName):
+
+        #self.dict['movements'].append(np.array(positionList))
+        #self.dict['movementsStamps'].append(np.array(timeList))
+        #self.dict['movementsBlocks'].append(blockName)
+        pass
     def cleanPositionList(self):
 
         for blockName in self.dict['persistentModel']:

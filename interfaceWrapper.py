@@ -6,6 +6,7 @@ from pipeline import pipelinesList, Blocks, filename
 import copy
 import time
 import datetime
+import numpy as np
 
 ready = True
 
@@ -40,14 +41,18 @@ class interface:
         self.labels = {}
         self.performance = {} 
         self.cap = {}
+        self.timestamp = {}
         self.frame = {}
         self.frameOriginal = {}
         self.pipelines = {}
         self.originalframe = {}
-        self.readyforupdate ={}
+        self.readyforupdate = {}
         self.blocchiUpdateBool = False
         self.taskUpdateBool = False
         self.timeUpdateBool = False
+        self.frameNumber = {}
+        self.timestampCounter = 0 
+
 
         self.dict['obj'].dict['speed'] = 1
         self.posWidgets = ['button','slider','dropdown']
@@ -58,21 +63,50 @@ class interface:
         for idx,cap in enumerate(self.dict['media']):
             self.cap['video'+str(idx)]=self.dict['media'][idx]
 
+
+        #timestamps
+
+        if 'timestamps' in self.dict:
+            if len(self.dict['timestamps']) == len(self.dict['media']):
+                self.timestamp['bool']=True
+                for idx,timestampsName in enumerate(self.dict['timestamps']):
+                    self.timestamp['video'+str(idx)] = self.loadTimestamps(timestampsName)
+        else: 
+            self.timestamp['bool']=False
+
+        for key in self.cap: self.frameNumber[key]=0
+        
+        if self.timestamp['bool'] and 'startStamps' in self.dict:
+            for idx,cap in enumerate(self.cap):
+                key = 'video'+str(idx)
+                self.timestamp[key] = self.timestamp[key][self.dict['startStamps'][idx]-1:]   
+                self.timestamp[key] = np.array([ x -  self.timestamp[key][0] for x in  self.timestamp[key] ])
+
+                while self.dict['startStamps'][idx]>=self.frameNumber[key]:
+                    _, frame = self.cap[key].read()
+                    self.frameNumber[key] += 1
+                
+                self.frameNumber[key] = 0
+
         self.makeWindow()
         self.createFrame('leftFrame',self.window,'LEFT')
         self.createFrame('rightFrame',self.window,'RIGHT')
 
-        for idx,cap in enumerate(self.cap):
+        for idx,cap in enumerate(self.cap): 
             self.graphicsFrame('video'+str(idx))
 
         self.speedControll()
         self.controlFrame()
         self.createWidgets()
         
-        self.show_frame()
+        if self.timestamp['bool']: self.show_frame_timestamp()
+        else: self.show_frame()
 
-        
-
+    def loadTimestamps(self,name):
+        array = np.load(name)
+        array = np.around([ x - array[0] for x in array ], decimals=4)
+        return array
+    
     def addWidgets(self, cnf=None, **kw):
 
         for idx,attr in enumerate(self.posWidgets):
@@ -87,16 +121,28 @@ class interface:
         self.window.wm_title(self.dict['obj'].dict['name'])
 
     def graphicsFrame(self,name):
-        self.createLabelFrame(name,self.frames['leftFrame'],'TOP') 
+        
+        self.createFrame(name+'container',self.frames['leftFrame'],'TOP')
+        self.createLabelFrame(name,self.frames[name+'container'],'LEFT') 
         self.createLabel(name,self.frames[name]) 
+
         self.performance[name+'Text'] = StringVar()
         self.performance[name+'Text'].set('performance')
-        self.performance[name+'Label'] = ttk.Label(self.frames[name],textvariable=self.performance[name+'Text'])
-        self.performance[name+'Label'].pack(side=TOP,padx=10,pady=10)
+        self.performance[name+'Label'] = ttk.Label(self.frames[name+'container'],textvariable=self.performance[name+'Text'])
+        self.performance[name+'Label'].pack(side=LEFT,padx=10,pady=10)
+            
+        if self.timestamp['bool']:
+            self.timestamp[name+'Text'] = StringVar()
+            self.timestamp[name+'Text'].set('timestamp')
+            self.timestamp[name+'Label'] = ttk.Label(self.frames[name+'container'],textvariable=self.timestamp[name+'Text'])
+            self.timestamp[name+'Label'].pack(side=LEFT,padx=10,pady=10)
         
+    def createCanvas(self):
+        pass
+        #self.pyplotcanvas = FigureCanvasTkAgg(f, master=root)  
     def speedControll(self):
-        self.createLabelFrame('FrameRate',self.frames['leftFrame'],'BOTTOM') 
-        self.sliderInterface = Scale(self.frames['FrameRate'],length=300, label='Change speed',showvalue=True,from_=1, to=2000, orient=HORIZONTAL, command=lambda value : self.manage_speed(value)).pack(side=TOP,padx=10,pady=10)   
+        #self.createLabelFrame('FrameRate',self.frames['rightFrame'],'TOP') 
+        self.sliderInterface = Scale(self.frames['rightFrame'],length=300, label='Change speed',showvalue=True,from_=1, to=2000, orient=HORIZONTAL, command=lambda value : self.manage_speed(value)).pack(side=TOP,padx=10,pady=10)   
 
 
     def controlFrame(self):
@@ -221,6 +267,7 @@ class interface:
         if side=='LEFT':self.frames[name].pack(padx=10,pady=10,side=LEFT)
         if side=='RIGHT':self.frames[name].pack(padx=10,pady=10,side=RIGHT)
         if side=='BOTTOM':self.frames[name].pack(padx=10,pady=10,side=BOTTOM)
+        self.frames[name].config(borderwidth=0)
     
     def createFrame(self,name,hostingElement,side):
         self.frames[name] = ttk.LabelFrame(hostingElement)
@@ -228,6 +275,7 @@ class interface:
         if side=='LEFT':self.frames[name].pack(side=LEFT)
         if side=='RIGHT':self.frames[name].pack(side=RIGHT)
         if side=='BOTTOM':self.frames[name].pack(side=BOTTOM)
+        self.frames[name].config(borderwidth=0)
 
     def createLabel(self,name,hostingElement):   
         self.labels[name] = ttk.Label(hostingElement)
@@ -246,9 +294,10 @@ class interface:
         
         for key in self.cap:
 
-            if self.dict['obj'].dict['speed']>1000:
+            if self.dict['obj'].dict['speed']>1000 and self.frameNumber[key]>0:
                 self.frame[key]=copy.copy(self.frameOriginal[key]) 
                 speed = self.dict['obj'].dict['speed'] -1000
+                
             else:    
                 if self.cap[key].isOpened() :
                     _, self.frame[key] = self.cap[key].read()
@@ -257,19 +306,42 @@ class interface:
                     speed = self.dict['obj'].dict['speed'] 
                 else: return 
 
+            self.frameNumber[key] +=1
             self.process(key)
             self.labels[key].after(speed,lambda key=key:self.updateBoolTrue(key))
+    
+    
+    
+    def show_frame_timestamp(self):
+        
+        nextTimestamplist = np.array([])
+        
+        for key in self.cap: nextTimestamplist = np.append(nextTimestamplist,self.timestamp[key][self.frameNumber[key]]) 
+        self.timestamp['Counter'] = np.min(nextTimestamplist)
 
+        for key in self.cap:                                            
+            if self.timestamp['Counter'] >= self.timestamp[key][self.frameNumber[key]] and self.cap[key].isOpened() :
+                _, self.frame[key] = self.cap[key].read()
+                self.frameOriginal[key] = copy.copy(self.frame[key])
+                self.readyforupdate[key] = False                           
+                speed = self.dict['obj'].dict['speed'] 
+                self.frameNumber[key] += 1
+                self.process(key)
+                self.labels[key].after(speed,lambda key=key:self.updateBoolTrue(key))   
+
+        
     def waitForUpdate(self):
         go = True
-        for key in self.readyforupdate:  go = go & self.readyforupdate[key]
-        if go:  self.show_frame()
+        for key in self.readyforupdate:  go = go and self.readyforupdate[key]
+        if go and self.timestamp['bool']:  self.show_frame_timestamp()
+        elif go and not(self.timestamp['bool']): self.show_frame()
 
     def process(self,key):
 
         result = pipelinesList[self.pipelines[key]].process(self.frame[key])
         self.pipelinePerformance(key)
         
+        if self.timestamp['bool']: self.pipelineTimeStamp(key)
         if self.blocchiUpdateBool: self.blocchiUpdate(key)
         if self.taskUpdateBool: self.taskUpdate(key)
         if self.timeUpdateBool: self.timeUpdate(key)
@@ -279,6 +351,7 @@ class interface:
         self.labels[key].imgtk = imgtk
         self.labels[key].configure(image=imgtk)
 
+    
     def pipelinePerformance(self,key):
         
         performanceList = []
@@ -289,10 +362,14 @@ class interface:
             if timer in pipelinesList[self.pipelines[key]].stageTimers.keys():
                 if pipelinesList[self.pipelines[key]].dict[timer]:
                     total = total + pipelinesList[self.pipelines[key]].stageTimers[timer].timer
-                    performanceList.append( pipelinesList[self.pipelines[key]].stageTimers[timer].label + ' ' +  str(pipelinesList[self.pipelines[key]].stageTimers[timer].timer)[:6] + '  ')
+                    performanceList.append( pipelinesList[self.pipelines[key]].stageTimers[timer].label + ' ' +  str(pipelinesList[self.pipelines[key]].stageTimers[timer].timer)[:6] + '  \n')
 
-        performanceList.append( ' FrameRate: ' +  str(1/total)[:2] + ' Hz ')
+        #performanceList.append( ' FrameRate: ' +  str(1/total)[:2] + ' Hz ')
         self.performance[key+'Text'].set(performanceSummary.join(performanceList))
+    
+    def pipelineTimeStamp(self,key):
+        
+        self.timestamp[key+'Text'].set(str(self.timestamp['Counter'])[:5]+' \n'+ str(self.frameNumber[key]))
 
     def blocchiUpdate(self,key):
         blocchiList = []
@@ -319,7 +396,7 @@ class interface:
         for idx,taskName in enumerate(Blocks.dict['proceduralTask']):
             task = Blocks.dict['proceduralTask'][taskName]
             string = 'Step'+str(taskName)+': '+ task['block']+'-->'+task['targetROI']
-            if task['completed']: string = string + ' --> completed @ ' + task['timestamp']
+            if task['completed']: string = string + ' --> completed @ ' + str(task['timestamp'])
             if task['error']: string = string + ' --> error'
             string = string + '\n'
             taskList.append(string)

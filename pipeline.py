@@ -139,8 +139,8 @@ class pipeline(cvW.base,object):
     def hand(self): 
         self.frame,contours = Masks['Hand'].process(self.hsv,self.frame)
         self.handImage = np.copy(self.blankImage)
-        self.handImage,self.frame = Masks['Hand'].mostSomenthing(self.handImage,self.frame) 
-        Blocks.handDetection(self.handImage)
+        self.handImage,self.frame,self.handCoordinates = Masks['Hand'].mostSomenthing(self.handImage,self.frame) 
+        Blocks.handDetection(self.handImage,self.handCoordinates)
 
     def bckSub(self): 
         self.bckSub = bckSub['bckSub'].process(self.frame)
@@ -195,6 +195,7 @@ class pipeline(cvW.base,object):
                         self.stageTimers[stage].performanceEnd()
        
         return self.frame
+pass
 
 
 # Initialise pipelines
@@ -208,26 +209,37 @@ pipelinesList['pipelineYellow'] = pipeline()
 pipelinesList['pipelineRed'] = pipeline()
 pipelinesList['pipelineGreen'] = pipeline()
 pipelinesList['pipelineHand'] = pipeline()
-pipelinesList['Trim'] = pipeline()
-pipelinesList['thresh'] = pipeline()
+
 pipelinesList['pipelineTest'].config(BGR2RGB=True)
 pipelinesList['pipelineYellow'].config(blur=True,hsv=True,yellowMask=True,BGR2RGB=True)
 pipelinesList['pipelineBlue'].config(Trim=True,blur=True,hsv=True,blueMask=True,BGR2RGB=True,gray=True,thresh=True)
 pipelinesList['pipelineRed'].config(Trim=True,blur=True,hsv=True,redMask=True,BGR2RGB=True)
 pipelinesList['pipelineGreen'].config(Trim=True,blur=True,hsv=True,greenMask=True,BGR2RGB=True)
 pipelinesList['pipelineHand'].config(Trim=True,blur=True,gray=True,hsv=True,hand=True,BGR2RGB=True)
+
 pipelinesList['TrimWarp'] = pipeline()
 pipelinesList['TrimWarp'].config(Trim=True,BGR2RGB=True)
-pipelinesList['Trim'].config(Trim=True,blur=True,hsv=True,bckSub=False,hand=True,blueMask=True,redMask=True,greenMask=True,yellowMask=True,blocksRepres=True,renderROIs=True,BGR2RGB=True)
+
+pipelinesList['TopCamera'] = pipeline()
+pipelinesList['TopCamera'].config(Trim=True,blur=True,hsv=True,bckSub=False,hand=True,blueMask=True,redMask=True,greenMask=True,yellowMask=True,blocksRepres=True,renderROIs=True,BGR2RGB=True)
+
+pipelinesList['thresh'] = pipeline()
 pipelinesList['thresh'].config(Trim2=True,gray=True,thresh=True)
+
 pipelinesList['bckSub'] = pipeline()
 pipelinesList['bckSub'].config(Trim=True,bckSub=True)
+
 pipelinesList['Bins'] = pipeline()
 pipelinesList['Bins'].config(Trim=True,renderBins=True,BGR2RGB=True)
+
 pipelinesList['wAreas'] = pipeline()
 pipelinesList['wAreas'].config(Trim=True,renderWAreas=True,BGR2RGB=True)
+
 pipelinesList['BGR2RGB'] = pipeline()
 pipelinesList['BGR2RGB'].config(Trim=True,BGR2RGB=True)
+
+pipelinesList['eyetrack'] = pipeline()
+pipelinesList['eyetrack'].config(Trim2=True,BGR2RGB=True)
 
 
 
