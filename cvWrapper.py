@@ -1,5 +1,6 @@
 import os.path
 import json
+import csv
 import cv2
 import time
 import datetime
@@ -9,9 +10,39 @@ import json
 import copy
 import matplotlib.pyplot as plt
 from scipy.signal import lfilter
+from config import config
+import matplotlib.path as pth
 
 
-class timingPerformance:
+class timeStamp():
+
+    def __init__(self):
+        self.timestamp = 0 
+        self.mode = 'unset'
+        self.dict={}
+        time.clock()
+
+    def setMode(self,mode):
+        self.mode = mode
+
+    def getMode(self): return self.mode
+
+    def setTime(self,value): self.timestamp = value
+
+    def getTime(self): 
+        
+        if self.mode =='live': 
+            self.timestamp = time.clock()
+
+        return self.timestamp
+
+    def addFrameNumber(self,key,val): 
+        self.dict[key] = val
+    
+    def getFrameNumber(self,key):
+        return self.dict[key]
+
+class timingPerformance():
 
     def __init__(self, name):
         self.label = name
@@ -31,7 +62,6 @@ class timingPerformance:
     def printPerformance(self):
         print('Name: ' +str(self.label)+' Performance: '+str(self.average))
 
-
 class base():
 
     def __init__(self,name):
@@ -46,8 +76,9 @@ class base():
 
         #save each parameter separatly
         for idx,attr in enumerate(self.posAttrList):
-            if attr in kw.keys(): 
-                self.dict[attr] = kw[attr]
+            if attr in kw.keys():
+                if isinstance(kw[attr], dict) and attr in self.dict.keys() and isinstance(self.dict[attr], dict): self.subconfig(attr,kw[attr]) #incase the value is a dict and there is some nested stuff
+                else: self.dict[attr] = kw[attr]
             if not (cnf == None): 
                 if attr in cnf.keys(): 
                     self.dict[attr] = cnf[attr]   
@@ -57,8 +88,12 @@ class base():
             self.dict['config'] = list(kw.keys())
         if not (cnf == None): 
             self.dict['config'] = list(cnf.keys())
-         
+    
+    def subconfig(self,attr,attrDict):
 
+        for key in attrDict: 
+            self.dict[attr][key] = attrDict[key]
+           
     def printAttributes(self):
 
         print('start------------------------')
@@ -107,13 +142,12 @@ class base():
         json.dump( self.__prepearDict(existingDict) , data_file,  indent=5)
         data_file.close()
 
-
     def __prepearDict(self,existingDict):
 
         newObject = { }
 
         for idx,value in enumerate(self.dict):
-            if value not in self.notSave:
+            if value not in self.notSave and not type(self.dict[value]).__module__ == np.__name__:
                 newObject[value] = self.dict[value]
         
         if not self.dict['kind'] in existingDict: existingDict[self.dict['kind']] = { }
@@ -134,7 +168,6 @@ class HSVMask(base,object):
         self.count=0
         self.mask = np.zeros((480,640), np.uint8)
         self.dict['maxMinPoint'] = {'value':0,'interface':True,'widget':'multibutton','buttonsValues':[0,1,2,3],'buttonsNames':['leftmost','rightmost','bottommost','topmost']}
-
 
     def process(self,hsvFrame,frame):
         
@@ -182,7 +215,6 @@ class HSVMask(base,object):
             #     pass      
             cv2.rectangle(self.frame,(x,y),(x+w,y+h),self.dict['strokeRgb']['value'],2)
 
-
     def detectMinBoundingBoxes(self):
 
         self.minBoundingBoxes=[]
@@ -224,7 +256,6 @@ class HSVMask(base,object):
         img2, contours, hierarchy = cv2.findContours(thresh,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)   
         self.contours =  contours
 
-
     def filterContours(self):
 
         self.areas = []
@@ -238,9 +269,9 @@ class HSVMask(base,object):
         self.areas[:] = [item for item in self.areas if item != 'remove']
 
         #if len(self.contours) > 3 :  self.dict['speed'] = 1001              
-
     
     def drawContours(self): cv2.drawContours(self.frame, self.contours, -1, self.dict['strokeRgb']['value'],self.dict['StrokeThikness']['value'])    
+
     def drawLabel(self):
 
         self.centers = []
@@ -272,7 +303,6 @@ class HSVMask(base,object):
             cv2.circle(frameReppres,most,5,[0,255,0],-1)
         
         return (frameProcess,frameReppres,most)
-
 
 class Main(base,object):
 
@@ -331,7 +361,6 @@ class trimmer(base,object):
 
     def resize(self):
         self.frame = cv2.resize(self.frame ,(self.dict['resizeValue']['value'][0],self.dict['resizeValue']['value'][1]), interpolation = cv2.INTER_CUBIC)
-
 
 class bckSub(base,object):
 
@@ -397,9 +426,10 @@ class binbox(base,object):
     def __init__(self,name,object=None):
         super(binbox, self).__init__( name )
         if not (object == None): self.referencedObject = object
-        self.posAttrList = ['kind','name','saveButton','topLeft','topRight','bottomLeft','bottomRight','coordinatesToggle','coordinatesX','coordinatesY','coordinateBoxes','translateCoordX','translateCoordY','revTransCoordX','revTransCoordY','cX','cY','startingValueX','startingValueY','reverseValueX','reverseValueY','area']
+        self.posAttrList = ['OnlyTLBR','kind','name','saveButton','topLeft','topRight','bottomLeft','bottomRight','coordinatesToggle','coordinatesX','coordinatesY','coordinateBoxes','translateCoordX','translateCoordY','revTransCoordX','revTransCoordY','cX','cY','startingValueX','startingValueY','reverseValueX','reverseValueY','area']
         self.notSave = self.notSave = ['kind','name','textCenter','box','coordinateBoxesNumPy']
         self.dict['kind'] = 'binbox'
+        self.dict['OrgRectCircle'] = {'value':5,'interface':True,'widget':'slider','max':40,'min':0}
         self.dict['topLeft'] = {'value':[10,10],'interface':True,'widget':'sliderList','max':[640,480],'min':[0,0],'nameList':['X','Y']}
         self.dict['topRight'] = {'value':[20,10],'interface':True,'widget':'sliderList','max':[640,480],'min':[0,0],'nameList':['X','Y']}
         self.dict['bottomLeft'] = {'value':[10,20],'interface':True,'widget':'sliderList','max':[640,480],'min':[0,0],'nameList':['X','Y']}
@@ -411,6 +441,9 @@ class binbox(base,object):
         self.dict['startingValueY'] = {'value':0,'interface':True,'widget':'slider','max':52,'min':0}
         self.dict['reverseValueX'] = {"value": False,"interface": True,"widget": "button","command": "toggleBoolean"}
         self.dict['reverseValueY'] = {"value": False,"interface": True,"widget": "button","command": "toggleBoolean"}
+        self.dict['OnlyTLBR'] = {"value": True,"interface": True,"widget": "button","command": "toggleBoolean"}
+        self.dict['OrgRectCorners'] = {"value": False,"interface": True,"widget": "button","command": "toggleBoolean"}
+        self.dict['OrgRectCircle'] = {'value':5,'interface':True,'widget':'slider','max':40,'min':0}
         self.dict['coordinateBoxes'] = []
         self.dict['coordinateBoxesNumPy'] = []
         self.dict['translateCoordX'] = ['A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z','AA','AB','AC','AD','AE','AF','AG','AH','AI','AJ','AK','AL','AM','AN','AO','AP','AQ','AR','AS','AT','AU','AV','AW','AX','AY','AZ']
@@ -418,15 +451,17 @@ class binbox(base,object):
         self.dict['revTransCoordX'] = list(reversed(self.dict['translateCoordX']))
         self.dict['revTransCoordY'] = list(reversed(self.dict['translateCoordY']))
         self.dict['cX'] = []
-        self.dict['cY'] = []
-
-
-        
+        self.dict['cY'] = []      
 
     def recalculateCoordinatesBoxes(self):
         
         self.dict['coordinateBoxes'] = []
         self.dict['coordinateBoxesNumPy'] = []
+
+        if self.dict['OnlyTLBR']['value']:
+            
+            self.dict['topRight']['value'] = [self.dict['bottomRight']['value'][0],self.dict['topLeft']['value'][1]]
+            self.dict['bottomLeft']['value'] = [self.dict['topLeft']['value'][0],self.dict['bottomRight']['value'][1]]
 
         if self.dict['coordinatesToggle']['value']:
 
@@ -500,6 +535,11 @@ class binbox(base,object):
         self.frame = frame
         self.originalFrame = copy.copy(frame)
 
+        if self.dict['OnlyTLBR']['value']:
+            self.dict['topRight']['value'] = [self.dict['bottomRight']['value'][0],self.dict['topLeft']['value'][1]]
+            self.dict['bottomLeft']['value'] = [self.dict['topLeft']['value'][0],self.dict['bottomRight']['value'][1]]
+
+
         if not(self.dict['coordinatesToggle']['value']==self.dict['coordinatesToggle']['oldValue']): 
                 self.dict['coordinatesToggle']['oldValue']=self.dict['coordinatesToggle']['value']
                 self.recalculateCoordinatesBoxes()
@@ -518,27 +558,46 @@ class binbox(base,object):
         self.dict['textCenter'] = tuple(self.dict['box'][:2].mean(axis=0, dtype=np.int0))  
         self.dict['textCenter'] = ( self.dict['textCenter'][0]-10, self.dict['textCenter'][1]+10) 
         
-        cv2.drawContours(self.frame,[self.dict['box']],0,(255, 255, 255),1)     
+        cv2.drawContours(self.frame,[self.dict['box']],0,(255, 255, 255),1)  
+
+        if self.dict['OrgRectCorners']['value']:
+            cv2.circle(self.frame, tuple(self.dict['topLeft']['value']), self.dict['OrgRectCircle']['value'] , (000,000,255), 1)
+            cv2.circle(self.frame, tuple(self.dict['topRight']['value']), self.dict['OrgRectCircle']['value'] , (000,000,255), 1)
+            cv2.circle(self.frame, tuple(self.dict['bottomRight']['value']), self.dict['OrgRectCircle']['value'] , (000,000,255), 1)
+            cv2.circle(self.frame, tuple(self.dict['bottomLeft']['value']), self.dict['OrgRectCircle']['value'] , (000,000,255), 1)
+            
         cv2.putText(self.frame, self.dict['name'] ,self.dict['textCenter'], cv2.FONT_HERSHEY_SIMPLEX, 0.35, (255, 255, 255), 1)
     
         return self.frame
+    
+    def returnPoints(self):
+
+        return   [self.dict['topLeft']['value'],
+                 self.dict['topRight']['value'],
+                 self.dict['bottomRight']['value'],
+                 self.dict['bottomLeft']['value']]
 
 class blocks(base,object):
 
     def __init__(self,name,object=None):
         super(blocks, self).__init__( name )
         if not (object == None): self.referencedObject = object
-        self.posAttrList = ['kind','name','BlockProp','AreaTopBound','AreaBottomBound','2x1','2x2','2x4','blocchi','persistentModelToggle','persistentModel','proceduralTask']
-        self.notSave = self.notSave = ['kind','name','contours','oldContours','ROI','handCoordinatesTimestamp','handCoordinates']
+        self.posAttrList = ['kind','name','BlockProp','AreaTopBound','AreaBottomBound','B2x1','B2x2','B2x4','blocchi','persistentModelToggle','persistentModel','proceduralTask','procedureToggle','proceduralTask','task','time','testGraph']
+        self.notSave = self.notSave = ['kind','name','speed','contours','oldContours','oldContoursExist','ROI','handCoordinatesTimestamp','handCoordinates','movements','movementsStamps','movementsBlocks','blockInMovement','BlockProp','persistentModel','proceduralTask','config']
         self.dict['kind'] = 'blocks'
         self.dict['blockInMovement']=''
-        self.dict['handCoordinatesX']=np.array([0])
-        self.dict['handCoordinatesY']=np.array([0])
-        self.dict['handCoordinatesTimestamp']=np.array([0])
+        self.dict['handCoordinatesX']=np.array([])
+        self.dict['handCoordinatesY']=np.array([])
+        self.dict['handCoordinatesTimestamp']=np.array([])
+        self.dict['GazeCoordinatesX']=np.array([])
+        self.dict['GazeCoordinatesY']=np.array([])
+        self.dict['GazeCoordinatesTimestamp']=np.array([])
+        self.dict['GazeLocation'] = []
+        self.dict['GazeLocationTimestamp']=np.array([])
 
         self.ts = time.time()
 
-        self.dict['ROI'] ={'movementThresold':0,'center':[],'box':[],'name':[],'movement':[],'hand':[],'coordinatesToggle':[],'coordinatesX':[],'coordinatesY':[],'coordinateBoxes':[],'coordinateBoxesNumPy':[],'coordinateCenter':[],'cX':[],'cY':[]}
+        self.dict['ROI'] ={'movementThresold':0,'center':[],'box':[],'path':[],'name':[],'gaze':[],'movement':[],'hand':[],'coordinatesToggle':[],'coordinatesX':[],'coordinatesY':[],'coordinateBoxes':[],'coordinateBoxesNumPy':[],'coordinateCenter':[],'cX':[],'cY':[],'displayBoxGaze':[],'displayBoxHand':[],'blockname':[]}
         self.dict['contours']={'contours':[],'color':[],'type':[],'boundingBox':[],'minBoundingBox':[],'areas':[],'ROI':[],'center':[],'ROImovement':[],'ROIhand':[],'ROIindex':[],'movement':[]}
         self.dict['oldContours']={}
         self.dict['oldContoursExist'] = False
@@ -546,43 +605,21 @@ class blocks(base,object):
         self.dict['BlockProp'] = ['id','boundingBox','minBoundingBox','center','color','size','positionXY','positionROI']     
         self.dict['AreaTopBound'] = {'value':2000,'interface':False,'widget':'slider','max':10000,'min':0}
         self.dict['AreaBottomBound']={'value':128,'interface':False,'widget':'slider','max':10000,'min':0}
-        self.dict['2x1'] = {'value':350,'interface':False,'widget':'slider','max':10000,'min':0}
-        self.dict['2x2'] = {'value':600,'interface':False,'widget':'slider','max':10000,'min':0}
-        self.dict['2x4'] = {'value':1368,'interface':False,'widget':'slider','max':10000,'min':0}
+        self.dict['B2x1'] = {'value':350,'interface':False,'widget':'slider','max':10000,'min':0}
+        self.dict['B2x2'] = {'value':600,'interface':False,'widget':'slider','max':10000,'min':0}
+        self.dict['B2x4'] = {'value':1368,'interface':False,'widget':'slider','max':10000,'min':0}
         self.dict['time'] = {'interface':True,'widget':'text'}
         
         self.dict['blocchi'] = {'interface':True,'widget':'text'}
         self.dict['persistentModelToggle'] = {"value": True,"interface": True,"widget": "button","command": "toggleBoolean"}       
-        self.dict['persistentModel']={'blocco9':{'color':[0,0,255],'colorName':'Red','type':'2x4'},
-                                      'blocco3':{'color':[0,255,0],'colorName':'Green','type':'2x4'},
-                                      'blocco6':{'color':[255,0,0],'colorName':'Blue','type':'2x4'},
-                                      'blocco12':{'color':[0,255,255],'colorName':'Yellow','type':'2x4'},
-                                      'blocco8':{'color':[0,0,255],'colorName':'Red','type':'2x2'},
-                                      'blocco2':{'color':[0,255,0],'colorName':'Green','type':'2x2'},
-                                      'blocco5':{'color':[255,0,0],'colorName':'Blue','type':'2x2'},
-                                      'blocco11':{'color':[0,255,255],'colorName':'Yellow','type':'2x2'},
-                                      'blocco10':{'color':[0,255,255],'colorName':'Yellow','type':'2x1'},
-                                      'blocco1':{'color':[0,255,0],'colorName':'Green','type':'2x1'},
-                                      'blocco7':{'color':[0,0,255],'colorName':'Red','type':'2x1'},
-                                      'blocco4':{'color':[255,0,0],'colorName':'Blue','type':'2x1'}}
+        self.dict['persistentModel']= config['persistentModel']
 
         self.cleanPersistentModel()
         self.persMod=[]
 
         self.dict['task'] = {'interface':True,'widget':'text'}
         self.dict['procedureToggle'] = {"value": True,"interface": True,"widget": "button","command": "toggleBoolean"}
-        self.dict['proceduralTask'] = {1:{'block':'blocco9','targetROI':'areaFirst AT,10 AW,11'},
-                                       2:{'block':'blocco3','targetROI':'areaFirst AT,10 AU,13'},
-                                       3:{'block':'blocco6','targetROI':'areaFirst AT,12 AW,13'},
-                                       4:{'block':'blocco12','targetROI':'areaFirst AV,14 AW,15'},
-                                       5:{'block':'blocco8','targetROI':'areaFirst AT,14 AU,15'},
-                                       6:{'block':'blocco2','targetROI':'areaFirst AR,14 AS,15'},
-                                       7:{'block':'blocco5','targetROI':'areaFirst AP,14 AQ,15'},
-                                       8:{'block':'blocco11','targetROI':'areaFirst AN,14 AO,15'},
-                                       9:{'block':'blocco10','targetROI':'areaFirst AQ,15 AR,15'},
-                                       10:{'block':'blocco1','targetROI':'areaFirst AU,15 AV,15'},
-                                       11:{'block':'blocco7','targetROI':'areaFirst AO,15 AP,15'},
-                                       12:{'block':'blocco4','targetROI':'areaFirst AM,15 AN,15'}}
+        self.dict['proceduralTask'] = config['proceduralTask']
 
         self.cleanProceduralTaskModel()
         self.dict['movements']=[]
@@ -590,6 +627,17 @@ class blocks(base,object):
         self.dict['movementsBlocks']=[]
 
         time.clock()
+
+        self.dict['testGraph'] = {"interface": True,"widget": "button","command":self.plottest}  
+
+    def loadExternal(self,fileName,key):
+
+        if not os.path.isfile(fileName):
+            print('file not existent notthing loaded')
+        else: 
+            data_file = open(fileName, 'r+')   
+            json_content= json.load(data_file)
+            return json_content[key] 
 
     def addContours(self,contours,color):
         
@@ -625,13 +673,17 @@ class blocks(base,object):
             center = tuple(box[:2].mean(axis=0, dtype=np.int0))
             center = ( center[0]-10,center[1]+10) 
 
-            
             self.dict['ROI']['box'].append(box) 
+            self.dict['ROI']['displayBoxGaze'].append(np.sum([box,np.int64([[5,5],[-5,5],[-5,-5],[5,-5]])],axis=0)) 
+            self.dict['ROI']['displayBoxHand'].append(np.sum([box,np.int64([[-5,-5],[5,-5],[5,5],[-5,5]])],axis=0))
+            self.dict['ROI']['path'].append(pth.Path(box))
             self.dict['ROI']['center'].append(center)
             self.dict['ROI']['name'].append(key)
             self.dict['ROI']['movement'].append(False)
+            self.dict['ROI']['gaze'].append(False)
             self.dict['ROI']['hand'].append(False)
             self.dict['ROI']['movementThresold'] = (dictionary[key].dict['topRight']['value'][0]-dictionary[key].dict['topLeft']['value'][0])*(dictionary[key].dict['bottomLeft']['value'][1]-dictionary[key].dict['topLeft']['value'][1])/5
+            self.dict['ROI']['blockname'].append(False)
             #self.dict['ROI']['coordinatesToggle'].append(dictionary[key].dict['coordinatesToggle'])
             
             if len(dictionary[key].dict['coordinateBoxes']) > 0:
@@ -653,7 +705,6 @@ class blocks(base,object):
                    self.dict['ROI']['cX'][-1].append(boxList['cX'])
                    self.dict['ROI']['cY'][-1].append(boxList['cY'])
 
-
             else:   
                 self.dict['ROI']['coordinatesX'].append([]) 
                 self.dict['ROI']['coordinatesY'].append([]) 
@@ -664,35 +715,32 @@ class blocks(base,object):
                 self.dict['ROI']['coordinateCenter'].append([])
                 self.dict['ROI']['coordinatesToggle'].append(False)       
 
-            
+    def addGaze(self,name):
+        
+        self.dict['Gaze'] = name
 
     def renderROIs(self,frame):
         
         if len(self.dict['ROI']['movement']) == 0: self.dict['ROI']['movement'] =self.dict['ROI']['hand']
         if len(self.dict['ROI']['hand']) == 0: self.dict['ROI']['hand'] =self.dict['ROI']['movement']
 
+        ####render bins
         for idx,ROI in enumerate(self.dict['ROI']['box']):
 
             if self.dict['ROI']['coordinatesToggle'][idx]: 
                 cv2.drawContours(frame,self.dict['ROI']['coordinateBoxesNumPy'][idx],-1,(100,100,100),1)
-                #cv2.drawContours(frame,self.dict['ROI']['coordinateCenter'][idx],-1,(150,150,150),2)
-                # for idx2,box in enumerate(self.dict['ROI']['coordinateBoxesNumPy'][idx]):
-                #     if self.dict['ROI']['coordinatesX'][idx][idx2]==self.dict['ROI']['coordinatesX'][idx][-1]:
-                #         cy = self.dict['ROI']['cY'][idx][idx2] 
-                #         center = (self.dict['ROI']['coordinateCenter'][idx][idx2][0],self.dict['ROI']['coordinateCenter'][idx][idx2][1])
-                #         cv2.putText(frame, cy , center , cv2.FONT_HERSHEY_SIMPLEX, 0.2, (255, 255, 255), 1)
-                #     if self.dict['ROI']['coordinatesY'][idx][idx2]==self.dict['ROI']['coordinatesY'][idx][-1]:
-                #         cx = self.dict['ROI']['cX'][idx][idx2] 
-                #         center = (self.dict['ROI']['coordinateCenter'][idx][idx2][0],self.dict['ROI']['coordinateCenter'][idx][idx2][1])
-                #         cv2.putText(frame,cx , center , cv2.FONT_HERSHEY_SIMPLEX, 0.2, (255, 255, 255), 1)
+            
+            if self.dict['ROI']['hand'][idx]: 
+                cv2.drawContours(frame,[self.dict['ROI']['displayBoxHand'][idx]],0,(255,255,255),1)
 
+            if  self.dict['ROI']['gaze'][idx]: 
+                cv2.drawContours(frame,[self.dict['ROI']['displayBoxGaze'][idx]],0,(255,255,255),1)
 
-            if self.dict['ROI']['hand'][idx]: rgb = (0,255,0)
-            elif  self.dict['ROI']['movement'][idx]: rgb = (0,0,255)
-            else: rgb = (255,255,255)
+            rgb = (255,255,255)
             cv2.drawContours(frame,[ROI],0,rgb,1)
             cv2.putText(frame, self.dict['ROI']['name'][idx] ,self.dict['ROI']['center'][idx], cv2.FONT_HERSHEY_SIMPLEX, 0.35, rgb, 1)
-        
+
+        ####render boundingbox       
         for idx,cnt in enumerate(self.dict['contours']['minBoundingBox']):
             if idx > len(self.dict['contours']['color'])-1:
                 print('azz')
@@ -701,22 +749,13 @@ class blocks(base,object):
             box = cv2.boxPoints(cnt)
             box = np.int0(box)
             cv2.drawContours(frame,[box],0,rgb,1)
-            #cv2.putText(frame, self.dict['contours']['type'][idx] + ' ' + str(self.dict['contours']['ROI'][idx]) ,(box[0][0]-10,box[0][1]+20), cv2.FONT_HERSHEY_SIMPLEX, 0.35, rgb, 1)
             cv2.putText(frame, self.dict['contours']['type'][idx] ,(box[0][0]-10,box[0][1]+20), cv2.FONT_HERSHEY_SIMPLEX, 0.35, rgb, 1)
         
+        ####render blocks  
         for idx,blockName in enumerate(self.dict['persistentModel']): 
             cnt = self.dict['persistentModel'][blockName]['minBBox']
             coordinates = self.dict['persistentModel'][blockName]['coordinatesIndexes']
             ROIindex = self.dict['persistentModel'][blockName]['ROIindex']
-            
-            # for index in coordinates:
-            #     try: cv2.drawContours(frame,[self.dict['ROI']['coordinateBoxesNumPy'][ROIindex][index]],-1,(255,255,255),1)
-            #     except: pass
-                # try:
-                #     center = self.dict['ROI']['coordinateCenter'][ROIindex][index]
-                #     cv2.circle(frame, (center[0],center[1]), 1 , (255,255,255), 2)
-                # except: pass
-                
 
             if not(cnt ==''):
                 rgb = self.dict['persistentModel'][blockName]['color']
@@ -736,7 +775,7 @@ class blocks(base,object):
                             cv2.line(frame,(item[0],item[1]),(item2[0],item2[1]),rgb,2)
                         except Exception as e: print(e)
 
-        
+
         self.dict['oldContours'] = copy.copy(self.dict['contours'])
         self.dict['oldContoursExist'] = True
         self.dict['contours']={'contours':[],'color':[],'type':[],'boundingBox':[],'minBoundingBox':[],'areas':[],'ROI':[],'center':[],'ROImovement':[],'ROIhand':[],'ROIindex':[],'movement':[]}
@@ -751,11 +790,9 @@ class blocks(base,object):
         for idx,ROI in enumerate(self.dict['ROI']['box']): 
             imgROI = bckSub[ ROI[0][1]:ROI[2][1],ROI[0][0]:ROI[2][0]]                 
             count = cv2.countNonZero(imgROI)
-            #if count>self.dict['ROI']['movementThresold']: self.dict['ROI']['movement'].append(True)
             if count>0: self.dict['ROI']['movement'].append(True)
             else: self.dict['ROI']['movement'].append(False)
         
-
     def handDetection(self,handPos,handCoordinates):
        
         self.dict['ROI']['hand']=[]
@@ -766,40 +803,239 @@ class blocks(base,object):
             if count>0: self.dict['ROI']['hand'].append(True)
             else: self.dict['ROI']['hand'].append(False)
             if not(handCoordinates==0):
-                #distanceX =  abs(self.dict['handCoordinatesX'][-1] - handCoordinates[0])
-                #distanceY =  abs(self.dict['handCoordinatesY'][-1] - handCoordinates[1])
-                #if distanceX>5 or distanceY>5:
                 self.dict['handCoordinatesX'] = np.append(self.dict['handCoordinatesX'],handCoordinates[0] ) 
                 self.dict['handCoordinatesY'] = np.append(self.dict['handCoordinatesY'],handCoordinates[1] )
-                self.dict['handCoordinatesTimestamp'] = np.append(self.dict['handCoordinatesTimestamp'],self.getStampNum() )
+                self.dict['handCoordinatesTimestamp'] = np.append(self.dict['handCoordinatesTimestamp'],self.getStampNum() )    
+
+    def gazeDetection(self):
+        
+        if not 'Gaze' in self.dict: return
+
+        gazeList = self.dict['Gaze'].getTrsfmGaze()      
+
+        try:
+            gazeList
+            point  = np.mean(gazeList,0)
+            
+            self.dict['GazeCoordinatesX'] = np.append(self.dict['GazeCoordinatesX'],gazeList[:,0] ) 
+            self.dict['GazeCoordinatesY'] = np.append(self.dict['GazeCoordinatesY'],gazeList[:,1] )
+            stmpN = self.getStampNum()
+            self.dict['GazeCoordinatesTimestamp'] = np.append(self.dict['GazeCoordinatesTimestamp'],[ stmpN for gaze in gazeList] )  
+            
+            for idx,path in enumerate(self.dict['ROI']['path']):
+                if path.contains_points([point]): 
+                    self.dict['ROI']['gaze'][idx]=True
+                    if self.dict['ROI']['blockname'][idx]: 
+                        self.dict['GazeLocation'].append(self.dict['ROI']['blockname'][idx])
+                        self.dict['GazeLocationTimestamp'] = np.append(self.dict['GazeLocationTimestamp'],stmpN)
+                    else: 
+                        self.dict['GazeLocation'].append('areaFirst')
+                        self.dict['GazeLocationTimestamp'] = np.append(self.dict['GazeLocationTimestamp'],stmpN)
+                else: 
+                    self.dict['ROI']['gaze'][idx] = False 
+                  
+        except Exception as e:
+            
+            for idx,path in enumerate(self.dict['ROI']['path']):self.dict['ROI']['gaze'][idx] = False 
 
     def plottest(self):
         
-        n = 200  # the larger n is, the smoother curve will be
+        n = 50  # the larger n is, the smoother curve will be
         b = [1.0 / n] * n
         a = 1
-        handCoordinatesY = lfilter(b,a,self.dict['handCoordinatesY'][1:])
+        handCoordinatesX = lfilter(b,a,self.dict['handCoordinatesX'][1:])
+        GazeCoordinatesX = self.dict['GazeCoordinatesX']
+        
+        #### RAW DATA
+        plt.figure(1)
+        plt.subplot(414)
+        
+        plt.ylabel('X movment Raw')
 
-        plt.plot(self.dict['handCoordinatesTimestamp'][1:],handCoordinatesY , 'k--', linewidth=0.2)
+        plt.plot(self.dict['handCoordinatesTimestamp'][1:],handCoordinatesX , 'k--', linewidth=0.2)
+        plt.plot(self.dict['GazeCoordinatesTimestamp'],GazeCoordinatesX , 'k--', linewidth=0.4)
 
-        self.dict['colorPlot']={'blocco9':'r',
-                                        'blocco3':'g',
-                                        'blocco6':'b',
-                                        'blocco12':'y',
-                                        'blocco8':'r',
-                                        'blocco2':'g',
-                                        'blocco5':'b',
-                                        'blocco11':'y',
-                                        'blocco10':'y',
-                                        'blocco1':'g',
-                                        'blocco7':'r',
-                                        'blocco4':'b'}
+        self.dict['colorPlot']={'blocco1':'r',
+                                'blocco2':'b',
+                                'blocco3':'g',                              
+                                'blocco4':'y',
+                                'blocco5':'b',
+                                'blocco6':'g',
+                                'blocco7':'y',
+                                'blocco8':'r',
+                                'areaFirst':'k'}
 
 
         for idx,movement in enumerate(self.dict['movements']):
-            plt.plot(self.dict['movementsStamps'][idx],self.dict['movements'][idx][:,1],  self.dict['colorPlot'][self.dict['movementsBlocks'][idx]])
+            plt.plot(self.dict['movementsStamps'][idx],self.dict['movements'][idx][:,0],  self.dict['colorPlot'][self.dict['movementsBlocks'][idx]])
+        
+        xmax = self.dict['GazeCoordinatesTimestamp'][-1] if self.dict['GazeCoordinatesTimestamp'][-1]>self.dict['handCoordinatesTimestamp'][-1] else self.dict['handCoordinatesTimestamp'][-1]
+
+        plt.xlim([0,xmax+0.2])
+
+        #### GAZE
+        plt.subplot(413)
+        plt.grid(True)
+        
+        # Set the ticks and labels 
+        ticks = np.arange(-0.2,8.8, 1)
+        labels = np.flip(np.array(['B8','B7','B6','B5','B4','B3','B2','B1','WA']),0)
+        plt.yticks(ticks, labels)
+        plt.ylabel('Gaze')
+        plt.ylim([0,9])
+
+        self.dict['BlockPlot']={'areaFirst':0,
+                                'blocco1':1,
+                                'blocco2':2,
+                                'blocco3':3,                              
+                                'blocco4':4,
+                                'blocco5':5,
+                                'blocco6':6,
+                                'blocco7':7,
+                                'blocco8':8}
+        
+        gazeLocation = [ self.dict['BlockPlot'][item] for item in self.dict['GazeLocation'] ]
+        lastLocation = ''
+        secondpointbool=False
+        firstpointbool=False
+        GazeArray = []
+
+        for idx,Location in enumerate(gazeLocation):
+            if lastLocation == Location: continue
+            elif firstpointbool==False:
+                stamps=[]
+                lastLocation = Location
+                firstpointbool=True
+                stamps.append(self.dict['GazeLocationTimestamp'][idx])
+            elif secondpointbool==False:
+                secondpointbool=True
+                stamps.append(self.dict['GazeLocationTimestamp'][idx-1])
+            else:
+                GazeArray.append([np.array(stamps),np.array([lastLocation,lastLocation]),self.dict['colorPlot'][self.dict['GazeLocation'][idx-2]]])
+                secondpointbool=False
+                stamps=[]
+                stamps.append(self.dict['GazeLocationTimestamp'][idx])
+                lastLocation = Location
+
+        ticks=np.array([])
+        labels=np.array([])
+        for gaze in GazeArray:
+            ticks = np.append(ticks,gaze[0])
+            labels = np.append(labels,[''])
+            plt.plot(gaze[0],gaze[1],gaze[2], linewidth=5, solid_capstyle='butt' )
 
 
+        plt.xlim([0,xmax+0.2])
+        plt.xticks(ticks,labels)
+        
+        #### MOVEMENT
+        plt.subplot(412)
+        plt.grid(True)
+        
+        # Set the ticks and labels 
+        ticks = np.arange(-0.2,8.8, 1)
+        labels = np.flip(np.array(['B8','B7','B6','B5','B4','B3','B2','B1','']),0)
+        plt.yticks(ticks, labels)
+        plt.ylabel('Movement')
+        plt.ylim([0,9])
+        
+        MovementArray = []
+        for idx,movment in enumerate(self.dict['movements']):
+            stamps = np.array([self.dict['movementsStamps'][idx][0],self.dict['movementsStamps'][idx][-1]])
+            block = np.array([self.dict['BlockPlot'][self.dict['movementsBlocks'][idx]],self.dict['BlockPlot'][self.dict['movementsBlocks'][idx]]])
+            color = self.dict['colorPlot'][self.dict['movementsBlocks'][idx]]
+            MovementArray.append([stamps,block,color])
+
+        ticks = np.array([])
+        labels = np.array([])
+        
+        for move in MovementArray:
+            ticks = np.append(ticks,move[0])
+            labels = np.append(labels,[''])
+            plt.plot(move[0],move[1],move[2], linewidth=5, solid_capstyle='butt' )
+        
+        plt.xlim([0,xmax+0.2])
+        plt.xticks(ticks,labels)
+
+        #### PROCEDURE
+        ##############
+        plt.subplot(411)
+        plt.grid(True)
+        
+        # Set the ticks and labels 
+        ticks = np.arange(0,2, 1)
+        labels = np.flip(np.array(['Correct','Error']),0)
+        plt.yticks(ticks, labels)
+        plt.ylabel('Procedure')
+
+        Procedure = []
+        for idx,taskName in enumerate(self.dict['proceduralTask']):
+            
+            if idx>len(self.dict['movementsStamps'])-1: continue
+
+            if 'associatedMovement' in self.dict['proceduralTask'][taskName]:
+                index = self.dict['proceduralTask'][taskName]['associatedMovement']
+                taskNumber = [1,1]    
+                color = 'g'     
+            else:
+                index = idx
+                taskNumber = [0,0]
+                color= 'r'
+
+            if index < 1: stamps = np.array([0,self.dict['movementsStamps'][index][-1]])
+            else: stamps = np.array([self.dict['movementsStamps'][index-1][-1],self.dict['movementsStamps'][index][-1]])
+           
+            gazebool = [ True if gaze>stamps[0] and gaze<stamps[1] else False for idx,gaze in enumerate(self.dict['GazeLocationTimestamp']) ]
+            
+            GazeLocationTimestamp = self.dict['GazeLocationTimestamp'][gazebool]
+            GazeLocation = [ self.dict['BlockPlot'][item] for item in np.array(self.dict['GazeLocation'])[gazebool] ]
+
+            lastLocation = ''
+            secondpointbool=False
+            firstpointbool=False
+            GazeArray = []
+
+            # for idx2,Location in enumerate(GazeLocation):
+            #     if lastLocation == Location: continue
+            #     elif firstpointbool==False:
+            #         gazestamps=[]
+            #         lastLocation = Location
+            #         firstpointbool=True
+            #         gazestamps.append(self.dict['GazeLocationTimestamp'][idx2])
+            #     elif secondpointbool==False:
+            #         secondpointbool=True
+            #         gazestamps.append(self.dict['GazeLocationTimestamp'][idx2-1])
+            #     else:
+            #         GazeArray.append([np.array(gazestamps),np.array([lastLocation,lastLocation]),self.dict['colorPlot'][self.dict['GazeLocation'][idx2-2]]])
+            #         secondpointbool=False
+            #         gazestamps=[]
+            #         gazestamps.append(self.dict['GazeLocationTimestamp'][idx2])
+            #         lastLocation = Location
+
+            Procedure.append([stamps,taskNumber,color,GazeArray])
+                
+        ticks = np.array([])
+        labels = np.array([])
+
+        for task in Procedure:
+            GazeArray = task[3]
+
+            # for gaze in GazeArray:
+            #     ticks = np.append(ticks,gaze[0])
+            #     labels = np.append(labels,['',''])
+            #     plt.plot(gaze[0],gaze[1],gaze[2], linewidth=5, solid_capstyle='butt' )
+
+            ticks = np.append(ticks,task[0][1])
+            labels = np.append(labels,['',''])
+            plt.plot(task[0],task[1],task[2], linewidth=20, solid_capstyle='butt' )
+            
+            
+
+        plt.ylim([0,4])        
+        plt.xlim([0,xmax+0.2])
+        plt.xticks(ticks,labels)
+
+        ##RENDER ALL
         plt.show()
 
     def detectMinBoundingBoxes(self):
@@ -807,20 +1043,14 @@ class blocks(base,object):
         for idx,cnt in enumerate(self.dict['contours']['contours']):
             self.dict['contours']['minBoundingBox'][idx]= cv2.minAreaRect(cnt)
             
-
-
     def detectType(self):
         
         for idx,area in enumerate(self.dict['contours']['areas']):
             if area < self.dict['AreaBottomBound']['value'] : self.dict['contours']['type'][idx]=('difficult to say')  
-            elif area < self.dict['2x1']['value'] : self.dict['contours']['type'][idx]=('2x1')
-            elif area < self.dict['2x2']['value'] : self.dict['contours']['type'][idx]=('2x2')
-            elif area < self.dict['2x4']['value'] : self.dict['contours']['type'][idx]=('2x4')
+            elif area < self.dict['B2x1']['value'] : self.dict['contours']['type'][idx]=('B2x1')
+            elif area < self.dict['B2x2']['value'] : self.dict['contours']['type'][idx]=('B2x2')
+            elif area < self.dict['B2x4']['value'] : self.dict['contours']['type'][idx]=('B2x4')
             else: self.dict['contours']['type'].append('larger than 2x3')
-
-
- 
-
     
     def sizeFiltering(self):
         
@@ -852,7 +1082,7 @@ class blocks(base,object):
         sameArea = f==e
            
         #check orientation and edge ratio         
-        if (block['type']=='2x1' or block['type']=='2x4'):
+        if (block['type']=='B2x1' or block['type']=='B2x4'):
             if abs(block['minBBox'][2])>45:
                 a = 0.5 - abs(block['minBBox'][1][0] / block['minBBox'][1][1])
                 b = 0.5 - abs(self.dict['contours']['minBoundingBox'][idx][1][0] / self.dict['contours']['minBoundingBox'][idx][1][1])
@@ -867,7 +1097,7 @@ class blocks(base,object):
                 c = abs(block['minBBox'][2])
                 d = abs(self.dict['contours']['minBoundingBox'][idx][2])
                 betterOrientation = c-d>0
-        elif block['type']=='2x2':
+        elif block['type']=='B2x2':
             a = 1 - abs(block['minBBox'][1][0] / block['minBBox'][1][1])
             b = 1 - abs(self.dict['contours']['minBoundingBox'][idx][1][0] / self.dict['contours']['minBoundingBox'][idx][1][1])
             betterRatio = a-b>0.15
@@ -878,7 +1108,6 @@ class blocks(base,object):
         if (((betterRatio or betterOrientation) and sameArea) or betterArea): 
             self.applyBlock(blockName,idx)
             block['adjusted']=True
-
 
     def setContoursToRemove(self,idx):
 
@@ -894,8 +1123,6 @@ class blocks(base,object):
         self.dict['contours']['movement'][idx]='remove'
         self.dict['contours']['minBoundingBox'][idx]='remove'
 
-
-    
     def removeContours(self):
 
         self.dict['contours']['contours'][:] = [item for item in self.dict['contours']['contours'] if item != 'remove']
@@ -931,7 +1158,6 @@ class blocks(base,object):
                          self.dict['contours']['ROImovement'][idx]= self.dict['ROI']['movement'][index]
                 index += 1
 
-
     def PMcompute(self):
 
         for blockName in self.dict['persistentModel']:
@@ -941,12 +1167,6 @@ class blocks(base,object):
             if len(block['ROIHistory'])>3:
                 a = block['ROIHistoryTimeStamp'][-1]
                 b = block['ROIHistoryTimeStamp'][-2]
-                alist = a.split(':')
-                blist = b.split(':')
-                alist = list(map(int,alist))
-                blist = list(map(int,blist))
-                a = alist[0]*60 + alist[1] + alist[2]/100
-                b = blist[0]*60 + blist[1] + blist[2]/100
                 if a-b<2:
                     block['ROIHistoryTimeStamp'][-2] = block['ROIHistoryTimeStamp'][-1]
                     block['ROIHistory'][-2] = block['ROIHistory'][-1]
@@ -962,7 +1182,7 @@ class blocks(base,object):
             if not(block['ROI']=='undetected'):
                 if not(block['ROIHistory'][-1:]==[block['ROI']]): 
                     block['ROIHistory'].append(block['ROI'])
-                    block['ROIHistoryTimeStamp'].append(self.getStamp())
+                    block['ROIHistoryTimeStamp'].append(self.getStampNum())
                     block['checkProcedure'] = True
                 else: block['checkProcedure'] = False
                 if not(block['ROI']==block['lastDtcROI']): 
@@ -971,12 +1191,11 @@ class blocks(base,object):
 
             block['ROI'] = 'undetected'
 
-
     def twoPDistance(self,point1,point2):
-        # rtrnNum = 1000
-        # try: rtrnNum = abs(point1[0]-point2[0])+abs(point1[1]-point2[1])
-        # except exception:
-        return abs(point1[0]-point2[0])+abs(point1[1]-point2[1])
+        
+        distance = np.linalg.norm(np.float32(point1)-np.float32(point2))
+        
+        return distance
     
     def convertPersModToNP(self):
 
@@ -1004,7 +1223,6 @@ class blocks(base,object):
             block['positionList'],
             block['timeList'],
             block['deleteList']] for (key,block) in self.dict['persistentModel'].items()],dtype=object)
-
     
     def removeContoursInBlockedBlocks(self):
 
@@ -1046,7 +1264,7 @@ class blocks(base,object):
                         
             if removeQuestion: self.removeContours()  
 
-    def PMassociateDetectedAndExpected(self):
+    def PMassociateDetectedAndExpectedMultiple(self):
         
         for idx,contours in enumerate(self.dict['contours']['contours']):  
            
@@ -1075,11 +1293,13 @@ class blocks(base,object):
                         block['ROIindex'] = self.dict['contours']['ROIindex'][idx]
                         block['minBBox'] = self.dict['contours']['minBoundingBox'][idx]
                         block['center'] = self.dict['contours']['center'][idx]
+
+                        self.dict['ROI']['blockname'][ self.dict['ROI']['name'].index(block['ROI']) ] = blockName
+
                         self.calculateCoordinates(idx,blockName)
                         if not(block['positionList'] == []):block['deleteList'] = True
                         block['confidence2']=0
                         break 
-
 
                 if (cntHndMvmnt or cntMvmnt) :
                      
@@ -1113,9 +1333,8 @@ class blocks(base,object):
                             if not(block['positionList'] == []):block['deleteList'] = True
                             block['confidence1']=0
                             break
-
                  
-    def PMassociateDetectedAndExpected2(self):
+    def PMassociateDetectedAndExpectedOne(self):
 
         if self.dict['blockInMovement']=='': 
             for blockName in self.dict['persistentModel']:
@@ -1166,7 +1385,7 @@ class blocks(base,object):
                         block['stopped']=False
                         print(self.dict['blockInMovement']+' on the move')
 
-                    elif distance<2 and sameType and not(undetectedROI):
+                    elif distance<5 and sameType and not(undetectedROI):
                         block['confidence1']+=1
                         if block['confidence1']>5:                       
                             self.resetBlock(self.dict['blockInMovement'],0)
@@ -1200,12 +1419,16 @@ class blocks(base,object):
                    
                 if block['confidence1']>30 and sameType and not(undetectedROI): 
                     block['stopped']=True
+                    if not(block['positionList'] == []):block['deleteList'] = True
+                    block['confidence1']=0
                     print(self.dict['blockInMovement']+' stopped')
                     self.applyBlock(self.dict['blockInMovement'],0)
                     self.resetBlock(self.dict['blockInMovement'],0)
                 
                 if block['confidence1']>60 and not(undetectedROI):
                     block['stopped']=True
+                    if not(block['positionList'] == []):block['deleteList'] = True
+                    block['confidence1']=0
                     print(self.dict['blockInMovement']+' stopped')
                     self.applyBlock(self.dict['blockInMovement'],0)
                     block['confidence1']=0
@@ -1223,7 +1446,6 @@ class blocks(base,object):
         block['area'] = self.dict['contours']['areas'][idx]
         block['center'] = self.dict['contours']['center'][idx]
         self.calculateCoordinates(idx,blockName)
-
            
     def resetBlock(self,blockName,idx):
 
@@ -1232,9 +1454,6 @@ class blocks(base,object):
         block['confidence1']=0
         block['confidence2']=0
   
-    
-
-
     def calculateCoordinates(self,idx,blockName):
 
         block = self.dict['persistentModel'][blockName]
@@ -1272,10 +1491,6 @@ class blocks(base,object):
                 block['ROI'] = block['ROI'] +' ' + str(xL) +',' + str(yL) +' ' + str(xF) +',' + str(yF)
             except Exception as e: print(e)
 
-
-
-
-
     def cleanPersistentModel(self):
 
          for blockName in self.dict['persistentModel']:
@@ -1308,14 +1523,16 @@ class blocks(base,object):
 
     def getStamp(self): 
         
-        timenow  = round(time.clock(),2)
+        timenow  = round(Timestamp.getTime(),2)
         sec = int(timenow)
         milli = int(( timenow - sec ) *100) 
         minutes = int(sec/60)
         stringa = str(minutes) + ':' + str(sec%60)+':'+str(milli)
         return stringa
     
-    def getStampNum(self): return time.clock()
+    def getStampNum(self): 
+        return Timestamp.getTime()    
+
     def checkProcederualTask(self):
         
         for blockName in self.dict['persistentModel']:
@@ -1328,31 +1545,28 @@ class blocks(base,object):
                         task['targetROI']==block['ROIHistory'][-1]):
                         task['completed'] = True
                         block['blocked'] = True
-                        lunghezz = len(block['positionList'])
-                        if block['deleteList']:                            
-                            task['timestamp']=copy.copy(block['timeList'][lunghezz-1])
-                            self.copyToMovements(block['positionList'],block['timeList'],blockName)
-                            block['positionList'] = []
-                            block['timeList'] = []
-                            block['deleteList'] = False
-                        else:
-                            task['timestamp']=copy.copy(block['ROIHistoryTimeStamp'][-1])
-
-    
+                        task['associatedMovement'] = len(self.dict['movements']) - 1 
+                        task['timestamp']=copy.copy(self.dict['movementsStamps'][-1])
+                        
     def copyToMovements(self,positionList,timeList,blockName):
-
-        #self.dict['movements'].append(np.array(positionList))
-        #self.dict['movementsStamps'].append(np.array(timeList))
-        #self.dict['movementsBlocks'].append(blockName)
+        if positionList[0]=='':
+            self.dict['movements'].append(np.array(positionList[1:]))
+            self.dict['movementsStamps'].append(np.array(timeList[1:]))
+        else:
+            self.dict['movements'].append(np.array(positionList))
+            self.dict['movementsStamps'].append(np.array(timeList))
+        self.dict['movementsBlocks'].append(blockName)
         pass
+        
     def cleanPositionList(self):
 
         for blockName in self.dict['persistentModel']:
             block = self.dict['persistentModel'][blockName]       
-            if block['deleteList']:                            
+            if block['deleteList']:                                     
+                self.copyToMovements(block['positionList'],block['timeList'],blockName)
                 block['positionList'] = []
                 block['timeList'] = []
-                block['deleteList'] = False
+                block['deleteList'] = False                           
                 block['lastContourIndex'] = 0
 
     def cleanProceduralTaskModel(self):
@@ -1372,15 +1586,357 @@ class blocks(base,object):
         self.detectType()
         
         if self.dict['persistentModelToggle']['value']: 
-            if len(self.dict['contours']['contours'])>1:self.PMassociateDetectedAndExpected()
-            elif len(self.dict['contours']['contours'])==1:self.PMassociateDetectedAndExpected2()
+            if len(self.dict['contours']['contours'])>1:self.PMassociateDetectedAndExpectedMultiple()
+            elif len(self.dict['contours']['contours'])==1:self.PMassociateDetectedAndExpectedOne()
             self.PMcompute()
         else: self.cleanPersistentModel()
         
         if self.dict['procedureToggle']['value']:
-            self.checkProcederualTask()
             self.cleanPositionList()
+            self.checkProcederualTask()           
         else: self.cleanProceduralTaskModel()
 
+class eyeTrackerData(base,object):
+
+    def __init__(self,name,object=None):
+        super(eyeTrackerData, self).__init__( name )
+        if not (object == None): self.referencedObject = object
+        self.posAttrList = ['kind','name','path','startstamp','key']
+        self.notSave = self.notSave = ['kind','name']
+        self.dict['kind'] = 'eyeTrackerData'
+        self.dict['timestamp']=[]
+        self.dict['framenumber']=[]
+        self.dict['posX']=[]
+        self.dict['posY']=[] 
+        self.dict['Ftimestamp']=[]
+        self.dict['Fframenumber']=[]
+        self.dict['FposX']=[]
+        self.dict['FposY']=[] 
+        self.posPrepeared=False
+
+    def initialise(self):
+
+        if 'path' in self.dict: self.loadGazePosition()
+        if 'startstamp' in self.dict: self.applyStartStamp()
+
+    def loadGazePosition(self):
+        csvfile = open(self.dict['path']+'gaze_positions.csv')
+        reader = csv.reader(csvfile, delimiter=' ', quotechar='|')
+        boolvar = False
+        for row in reader:
+            rowlist = row[0].split(',')
+            if boolvar:
+                self.dict['timestamp'].append(float(rowlist[0]))
+                self.dict['framenumber'].append(int(rowlist[1]))
+                self.dict['posX'].append(float(rowlist[3][:10]))
+                self.dict['posY'].append(float(rowlist[4][:10])) 
+            boolvar = True
+
+    def applyStartStamp(self):
+        val = self.dict['startstamp']
+        self.dict['timestamp'] = self.dict['timestamp'][val:]
+        self.dict['framenumber'] = self.dict['framenumber'][val:]
+        self.dict['framenumber'] = [x - self.dict['framenumber'][0] for x in self.dict['framenumber']]
+        self.dict['posX'] = self.dict['posX'][val:]
+        self.dict['posY'] = self.dict['posY'][val:]
+        pass
         
+    def prepearPos(self,frame):
+        
+        self.currentShape = frame.shape[:2]
+        indexes = [i for i,x in enumerate(self.dict['framenumber']) if x==Timestamp.getFrameNumber(self.dict['key'])]
+        self.listpos=[]
+        self.posPrepeared=True
+        
+        for index in indexes: 
+
+            posX = int(frame.shape[1]*self.dict['posX'][index])
+            posY = abs(int(frame.shape[0]*self.dict['posY'][index])-frame.shape[0])
+            self.listpos.append((posX,posY))
+            cv2.circle(frame, (posX,posY), 10 , (255,0,0), 2)
+
+    def roiTrimming(self,roi):
+        
+        if not(self.posPrepeared): return
+
+        try: self.x
+        except: self.x, self.y, self.w, self.h = roi
+        
+        self.listpos = [list((point-[self.x,self.y]).ravel()) for point in np.array(self.listpos)]
+
+        self.currentShape = (self.h,self.w)
+
+    def associateWIthInvMap(self, tuplepoint, invMap):
+
+        try:
+             newPoint = invMap[tuplepoint]
+        except:
+             newPoint = [0,0]
+       
+        return newPoint
+
+    def changeInPixelMapping(self,invMap):
+        
+        if not(self.posPrepeared): return
+
+        self.listpos = [self.associateWIthInvMap(tuple(point.ravel()),invMap) for point in np.int32(self.listpos)]
+
+    def associateWithSC(self,point):
+
+         try:  newPoint = [ int(self.mx(point[0].item())) , int(self.my(point[1]).item()) ]
+         except: newPoint = [0,0]
+         return newPoint 
+
+    def changeInScale(self,values): 
+
+        if not(self.posPrepeared): return
+
+        try: self.mx
+        except:
+            from scipy.interpolate import interp1d
+            self.mx = interp1d([0,self.currentShape[1]],[0,values[0]])
+            self.my = interp1d([0,self.currentShape[0]],[0,values[1]])
+        
+        self.listpos = [ self.associateWithSC(point) for point in self.listpos if point[0]<self.currentShape[1] and point[1]<self.currentShape[0] ]
+
+    def getGaze(self):
+
+        if not(self.posPrepeared): return 
+
+        return self.listpos
+
+    def renderGaze(self,frame):
+
+        if not(self.posPrepeared): return
+
+        for index,point in enumerate(self.listpos):
+            cv2.circle(frame, (tuple(point)), 10 , (0,255,0), 2)
+            if index==len(self.listpos)-1: break    
+            cv2.line(frame,tuple(self.listpos[index]),tuple(self.listpos[index+1]),(0,0,255),2)
+
+        return frame 
+
+class cameraUndistortion(base,object):
+
+    def __init__(self,name,calibrationName,invMap,object=None):
+        super(cameraUndistortion, self).__init__( name )
+        if not (object == None): self.referencedObject = object
+        self.posAttrList = ['kind','name']
+        self.notSave = self.notSave = ['kind','name']
+        self.dict['kind'] = 'cameraUndistortion'
+        self.boolFirstTime=True
+        self.h = 720
+        self.w = 1280
+        self.shape = (self.h,self.w)
+
+        with np.load(calibrationName) as X:
+            self.mtx, self.dist, self.rvecs, self.tvecs = [X[i] for i in ('mtx','dist','rvecs','tvecs')]
+       
+        self.newcameramtx, self.roi=cv2.getOptimalNewCameraMatrix(self.mtx, self.dist, (self.w,self.h), 1, (self.w,self.h))
+        self.mapx, self.mapy = cv2.initUndistortRectifyMap(self.mtx, self.dist, None, self.newcameramtx, (self.w,self.h), 5)
+        self.x, self.y, self.w, self.h = self.roi
+
+        try: self.invMap = np.load(invMap)
+        except Exception as e: 
+            import scipy.spatial
+            YX = np.indices((720,1280)).swapaxes(0,2).swapaxes(0,1).reshape(-1,2)
+            data = np.int32([ [ self.mapx[tuple(point.ravel())] , self.mapy[tuple(point.ravel())] ]for point in YX ])
+            tree = scipy.spatial.cKDTree(data)
+            XY = np.indices((1280,720)).swapaxes(0,2).swapaxes(0,1).reshape(-1,2)
+            self.invMap = np.int32([np.flip(np.unravel_index(tree.query(point)[1],self.shape),0) for point in XY]).reshape(1280,720,2)
+            save('invMap',invMap)
+
+    def process(self,frame):
+
+        frame = cv2.remap(frame, self.mapx, self.mapy, cv2.INTER_LINEAR)
+        frame = frame[self.y:self.y+self.h, self.x:self.x+self.w]   
+        
+        return frame
+
+class perspective(base,object):
+
+    def __init__(self,name,object=None):
+        super(perspective, self).__init__( name )
+        if not (object == None): self.referencedObject = object
+        self.posAttrList = ['kind','name','renderCnt','renderCnt','Th/Opening','Threshold1','Threshold2','Erosion','Dilate','AreaTopBound','AreaBottomBound']
+        self.notSave = self.notSave = ['kind','name']
+        self.dict['kind'] = 'perspective'
+        self.orgRect = np.float32([[0,0],[840,0],[840,140],[0,140]]).reshape(-1,1,2)
+        self.checkersize=[5,5]
+        self.kernel = np.ones((2,2),np.uint8)
+        self.shp =np.float32([[0,0],[640,0],[640,311],[0,311],[0,0]])
+        self.trnsfPtsBool=False
+        self.trgRectBool = False
+        self.dict['TargetRect'] = {"value": False,"interface": True,"widget": "button","command": "toggleBoolean"}   
+        self.dict['renderCnt'] = {"value": False,"interface": True,"widget": "button","command": "toggleBoolean"}    
+        self.dict['Th/Opening'] = {"value": False,"interface": True,"widget": "button","command": "toggleBoolean"}    
+        self.dict['Threshold1'] = {'value':180,'interface':True,'widget':'slider','max':255,'min':0}
+        self.dict['Threshold2'] = {'value':255,'interface':True,'widget':'slider','max':255,'min':0}
+        self.dict['Erosion'] = {'value':1,'interface':True,'widget':'slider','max':10,'min':0}
+        self.dict['Dilate'] = {'value':2,'interface':True,'widget':'slider','max':10,'min':0}
+        self.dict['AreaTopBound'] = {'value':10000,'interface':True,'widget':'slider','max':20000,'min':0}
+        self.dict['AreaBottomBound'] = {'value':0,'interface':True,'widget':'slider','max':20000,'min':0}
+
+    def addGaze(self,gazeObjct):
+        self.gazeObject = gazeObjct
+
+    def transformGaze(self):
+        
+        try: self.gazeObject
+        except: return 
+
+        if self.gazeObject and  self.MtrxTimestamp==Timestamp.getTime():
+            self.gaze =  np.float32(self.gazeObject.getGaze()).reshape(1,-1,2)
+            if len(self.gaze[0])>0:
+                self.trnsfGaze = np.int32(cv2.perspectiveTransform(self.gaze,self.invMtrx)).reshape(-1,2)
+                self.trnsfGazeTimestamp = Timestamp.getTime()
+
+    def renderTrsfmGaze(self,frame):
+        
+        try: self.trnsfGaze
+        except: return frame
+
+        if self.trnsfGazeTimestamp+0.2>Timestamp.getTime():
+
+            for index,point in enumerate(self.trnsfGaze):
+                cv2.circle(frame, (tuple(point)), 10 , (0,255,0), 2)
+                if index==len(self.trnsfGaze)-1: break    
+                cv2.line(frame,tuple(self.trnsfGaze[index]),tuple(self.trnsfGaze[index+1]),(0,0,255),2)
+            
+            cv2.putText(frame, 'eye gaze' ,tuple(self.trnsfGaze[-1]), cv2.FONT_HERSHEY_SIMPLEX, 0.35, (255, 255, 255), 1)
+
+        return frame
     
+    def getTrsfmGaze(self):
+
+        try: self.trnsfGaze
+        except: return 
+        
+        if self.trnsfGazeTimestamp+0.2>Timestamp.getTime():
+            return self.trnsfGaze
+
+    def addOrgRect(self,points):
+
+        self.orgRect = np.float32(points).reshape(-1,1,2)         
+
+    def addBins(self,bins):
+
+        self.bins = np.float32(bins)
+    
+    def addwAreas(self,wAreas):
+
+        self.wAreas = np.float32(wAreas)
+
+    def renderAll(self,frame):
+        
+        if self.stoprendering: return frame
+
+        self.trnsfBins = np.int32(cv2.perspectiveTransform(self.bins,self.Mtrx))
+        self.trnsfwAreas = np.int32(cv2.perspectiveTransform(self.wAreas,self.Mtrx))
+
+        cv2.drawContours(frame,self.trnsfBins,-1,(255, 255, 255),1) 
+        cv2.drawContours(frame,self.trnsfwAreas,-1,(255, 255, 255),1) 
+
+        return frame
+
+    def draw(self,img,points):
+
+        for idx,vertex in enumerate(points):
+        
+            if idx < len(points)-1: 
+                pointA = tuple(vertex.ravel())
+                pointB = tuple(points[idx+1].ravel())
+                img = cv2.line(img, pointA, pointB, (0,0,255), 1)
+            
+        return img
+
+    def simplify(self,cnt):
+
+        epsilon = 0.01*cv2.arcLength(cnt,True)
+        approx = cv2.approxPolyDP(cnt,epsilon,True)
+        return 4 - len(approx)
+    
+    def calcMtrx(self,trgRect):
+        self.Mtrx = cv2.getPerspectiveTransform(self.orgRect,trgRect)
+        self.invMtrx = cv2.getPerspectiveTransform(trgRect,self.orgRect)
+        self.MtrxTimestamp = Timestamp.getTime()
+        
+    def areaCutOut(self,contours):
+        
+        contourslist = []
+
+        for cnt in contours:
+            area = cv2.contourArea(cnt)
+            if area < self.dict['AreaTopBound']['value'] and area > self.dict['AreaBottomBound']['value']:
+                contourslist.append(cnt)
+
+        return contourslist
+
+    def process(self,frame):
+        
+        #gray threshold opening contours
+        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        ret,th1 = cv2.threshold(gray,self.dict['Threshold1']['value'],self.dict['Threshold2']['value'],cv2.THRESH_BINARY)
+        erosion = cv2.erode(th1,self.kernel,iterations = self.dict['Erosion']['value'])
+        dilation = cv2.dilate(erosion,self.kernel,iterations = self.dict['Dilate']['value'])
+        opening, contours, hierarchy = cv2.findContours(dilation,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
+        
+        if len(contours)>0:
+
+            #select contours with larger area
+            contours = sorted(contours, key=cv2.contourArea, reverse=True)[:4]
+            contours = self.areaCutOut(contours)
+            contours = sorted(contours, key=self.simplify, reverse=True)
+
+            if len(contours)>1:
+
+                # crop the image
+                x,y,w,h = cv2.boundingRect(contours[0])    
+                openingtrim = gray[y:y+h, x:x+w]    
+                x2,y2,w2,h2 = cv2.boundingRect(contours[1])    
+                openingtrim2 = gray[y2:y2+h2, x2:x2+w2]    
+
+                # find circle grid in the cropped image
+                ret, corners = cv2.findCirclesGrid(openingtrim, (self.checkersize[0],self.checkersize[1]), None)
+                ret2, corners2 = cv2.findCirclesGrid(openingtrim2, (self.checkersize[0],self.checkersize[1]), None)
+                self.trgRectBool = False
+
+                if (ret == True) and (ret2 ==True):
+
+                    # uncrop results of circles find on the cropped area 
+                    corners = np.add(corners,np.array([x,y],np.float32))
+                    corners2 =  np.add(corners2,np.array([x2,y2],np.float32))
+
+                    if not(corners[0][0][0]<corners2[0][0][0]):
+                        corners3 = corners
+                        corners = corners2
+                        corners2 = corners3
+
+                    #target Rect
+                    self.trgRect = np.array([corners[4],corners2[0],corners2[20],corners[24]],np.float32)
+                    
+                    #transformation
+                    self.calcMtrx(self.trgRect)
+
+                    self.shp = self.shp.reshape(1,-1,2)
+                    self.trnsfPts = cv2.perspectiveTransform(self.shp,self.Mtrx)
+                    self.trnsfPts = self.trnsfPts.reshape(-1,2)
+                    self.trnsfPtsBool = True
+                    self.trgRectBool = True
+                    self.lastTimestamp = Timestamp.getTime()
+                    self.stoprendering = False
+                    self.transformGaze()
+
+
+        if self.dict['Th/Opening']['value']: frame =  cv2.cvtColor(opening, cv2.COLOR_GRAY2BGR)       
+        if self.trnsfPtsBool and self.lastTimestamp+0.2>Timestamp.getTime(): frame= self.draw(frame,self.trnsfPts)
+        else: self.stoprendering = True
+        if self.dict['renderCnt']['value'] and len(contours)>0:  cv2.drawContours(frame, contours, -1, (0,255,0), 3)
+        if self.trgRectBool and self.dict['TargetRect']['value']: frame= self.draw(frame,self.trgRect) 
+
+        return frame
+
+#initialise Timestamp object
+############################
+
+Timestamp = timeStamp()
