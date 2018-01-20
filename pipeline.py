@@ -6,7 +6,7 @@ import numpy as np
 ###internal
 import cvWrapper as cvW
 from config import config
-from cvWobjects import Masks,Trims,bckSub,Thresh,Bins,wAreas,Blocks,GazePositions,Undistort,perspective,OrgRect
+from cvWobjects import Masks,Trims,bckSub,Thresh,Bins,wAreas,Blocks,GazePositions,Undistort,perspective,OrgRect,exclRect
 
 # Pipeline class
 ####################
@@ -15,7 +15,7 @@ class pipeline(cvW.base,object):
     
     def __init__(self):
         super(pipeline, self).__init__( 'pipeline' )
-        self.posAttrList = ['perspective','renderROIs','renderWAreas','kind','name','Trim','Trim2','blur','blueMask','redMask','greenMask','yellowMask','hand','BGR2RGB','bckSub','thresh','gray','hsv','renderBins','blocksRepres','filterHand','drawEyeGaze','undistortCamera','prepearEyeGaze','renderOrgRect','perspeRender','flip','renderTrsfGaze']
+        self.posAttrList = ['perspective','renderROIs','renderWAreas','kind','name','Trim','Trim2','blur','blueMask','redMask','greenMask','yellowMask','hand','BGR2RGB','bckSub','thresh','gray','hsv','renderBins','blocksRepres','filterHand','drawEyeGaze','undistortCamera','prepearEyeGaze','renderOrgRect','perspeRender','flip','renderTrsfGaze','renderExclRect']
         self.notSave = ['kind','name']
         self.dict['kind'] = 'pipeline'
         self.stages = {'Trim':self.Trim,
@@ -43,7 +43,8 @@ class pipeline(cvW.base,object):
                        'renderOrgRect':self.renderOrgRect,
                        'perspeRender':self.perspeRender,
                        'flip':self.flip,
-                       'renderTrsfGaze':self.renderTrsfGaze}
+                       'renderTrsfGaze':self.renderTrsfGaze,
+                       'renderExclRect':self.renderExclRect}
 
         self.blankImage = np.zeros((480,640), np.uint8)
         self.stageTimers = {}
@@ -117,6 +118,9 @@ class pipeline(cvW.base,object):
     
     def renderOrgRect(self): 
         self.frame = OrgRect.render(self.frame) 
+    
+    def renderExclRect(self): 
+        self.frame = exclRect.render(self.frame) 
 
     def prepearEyeGaze(self):
         GazePositions.prepearPos(self.frame)

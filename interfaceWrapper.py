@@ -9,14 +9,14 @@ import time
 import datetime
 import numpy as np
 import csv
-
+import os.path
+import json
 
 #####internal
 from pipelineObjects import pipelinesList
 from cvWrapper import Timestamp
 from config import config
 from cvWobjects import Blocks
-
 
 ready = True
 
@@ -48,7 +48,7 @@ class interface:
         self.widgets = {}
         self.frames = {}
         self.labels = {}
-        self.performance = {} 
+        self.performance = {}
         self.cap = {}
         self.timestamp = {}
         self.frame = {}
@@ -61,9 +61,13 @@ class interface:
         self.timeUpdateBool = False
         self.frameNumber = {}
         self.timestampCounter = 0 
-
-
-        self.dict['obj'].dict['speed'] = 1
+        self.stopVideos = False
+        self.stop = False
+        self.adjustment = 0
+  
+        if 'speed' in self.dict: self.dict['obj'].dict['speed'] = self.dict['speed']
+        else: self.dict['obj'].dict['speed'] = 1
+        
         self.posWidgets = ['button','slider','dropdown']
         
         for idx,pipeline in enumerate(self.dict['pipelines']):
@@ -89,16 +93,29 @@ class interface:
         for key in self.cap: self.frameNumber[key]=0
         
         if self.timestamp['bool'] and 'startStamps' in self.dict:
+            
             for idx,cap in enumerate(self.cap):
                 key = self.getkey(idx)
                 self.timestamp[key] = self.timestamp[key][self.dict['startStamps'][idx]-1:]   
+                if idx == 0 : self.adjustment = self.dict['startStamps'][idx]
                 self.timestamp[key] = np.array([ x -  self.timestamp[key][0] for x in  self.timestamp[key] ])
 
-                while self.dict['startStamps'][idx]>=self.frameNumber[key]:
-                    _, frame = self.cap[key].read()
-                    self.frameNumber[key] += 1
+                # while self.dict['startStamps'][idx]>=self.frameNumber[key]:
+                #     _, frame = self.cap[key].read()
+                #     self.frameNumber[key] += 1
                 
+                self.cap[key].set(1, self.dict['startStamps'][idx])
+
                 self.frameNumber[key] = 0
+            
+            if 'stopStamps' in self.dict:
+                if self.dict['stopStamps'][idx]:
+                    self.stop = True
+                    self.stopkey = key 
+                    self.stopStamps = self.dict['stopStamps'][idx] -self.dict['startStamps'][idx]
+            
+
+
 
         self.makeWindow()
         self.createFrame('leftFrame',self.window,'LEFT')
@@ -108,6 +125,7 @@ class interface:
             self.graphicsFrame(self.getkey(idx))
 
         self.speedControll()
+        #self.frameControll()
         self.controlFrame()
         self.createWidgets()
         
@@ -166,6 +184,10 @@ class interface:
     
     def speedControll(self):
         self.sliderInterface = Scale(self.frames['rightFrame'],length=300, label='Change speed',showvalue=True,from_=1, to=2000, orient=HORIZONTAL, command=lambda value : self.manage_speed(value)).pack(side=TOP,padx=10,pady=10)   
+    
+    def frameControll(self):
+        self.sliderframe0 = Scale(self.frames['rightFrame'],length=300, label='Adjust frame 0',showvalue=True,from_=0, to=50, orient=HORIZONTAL, command=lambda value : self.manage_frame('video0',1)).pack(side=TOP,padx=10,pady=10)  
+        self.sliderframe1 = Scale(self.frames['rightFrame'],length=300, label='Adjust frame 1',showvalue=True,from_=0, to=50, orient=HORIZONTAL, command=lambda value : self.manage_frame('video1',value)).pack(side=TOP,padx=10,pady=10)    
 
     def controlFrame(self):
         self.createLabelFrame(self.dict['obj'].dict['name'],self.frames['rightFrame'],'TOP')
@@ -243,6 +265,8 @@ class interface:
 
         if self.dict['obj'].dict[key]['command'] == 'saveobject': self.widgets[key].config(command= lambda : self.dict['obj'].dictToJson(config['filename'],mode='save'))
         elif self.dict['obj'].dict[key]['command'] == 'toggleBoolean': self.widgets[key].config(command= lambda : self.toggleBoolean(key)) 
+        elif self.dict['obj'].dict[key]['command'] == 'adjustFrame': self.widgets[key].config(command= lambda : self.manage_frame('video0',self.dict['obj'].dict[key]['value'])) 
+        elif self.dict['obj'].dict[key]['command'] == 'saveAndReload': self.widgets[key].config(command= lambda : self.saveAndReload()) 
         else: self.widgets[key].config(command= lambda : self.dict['obj'].dict[key]['command']()) 
 
         self.widgets[key].pack(side=TOP,padx=10,pady=10)
@@ -309,8 +333,11 @@ class interface:
         self.widgets[key].pack(padx=10,pady=10)
 
     def updateBoolTrue(self,key):
-        self.readyforupdate[key] = True
-        self.waitForUpdate()
+        if self.stopVideos:
+            return
+        else:
+            self.readyforupdate[key] = True
+            self.waitForUpdate()
 
     def show_frame(self):
         
@@ -333,14 +360,14 @@ class interface:
             self.labels[key].after(speed,lambda key=key:self.updateBoolTrue(key))
         
     def show_frame_timestamp(self):
-        
+
         nextTimestamplist = np.array([])
         
         for key in self.cap: nextTimestamplist = np.append(nextTimestamplist,self.timestamp[key][self.frameNumber[key]]) 
         Timestamp.setTime(np.min(nextTimestamplist))
 
         for key in self.cap:                                            
-            if Timestamp.getTime() >= self.timestamp[key][self.frameNumber[key]] and self.cap[key].isOpened() :
+            if Timestamp.getTime() >= self.timestamp[key][self.frameNumber[key]] and self.cap[key].isOpened():
                 _, self.frame[key] = self.cap[key].read()
                 self.frameOriginal[key] = copy.copy(self.frame[key])
                 self.readyforupdate[key] = False                           
@@ -348,7 +375,10 @@ class interface:
                 self.frameNumber[key] += 1
                 Timestamp.addFrameNumber(key,self.frameNumber[key])
                 self.process(key)
-                self.labels[key].after(speed,lambda key=key:self.updateBoolTrue(key))   
+                self.labels[key].after(speed,lambda key=key:self.updateBoolTrue(key)) 
+                
+                if self.stop and self.stopkey == key and self.frameNumber[key] == self.stopStamps: 
+                    self.stopVideos = True
         
     def waitForUpdate(self):
         go = True
@@ -413,7 +443,7 @@ class interface:
         for idx,taskName in enumerate(Blocks.dict['proceduralTask']):
             task = Blocks.dict['proceduralTask'][taskName]
             string = 'Step'+str(taskName)+': '+ task['block']+'-->'+task['targetROI']
-            if task['completed']: string = string + ' --> completed @ ' + str(task['timestamp'][-1])
+            if task['completed']: string = string + ' --> started @ ' + str(task['timestamp'][0]) + ' completed @ ' + str(task['timestamp'][-1])
             if task['error']: string = string + ' --> error'
             string = string + '\n'
             taskList.append(string)
@@ -436,4 +466,43 @@ class interface:
 
     def manage_speed(self,newspeed):
         self.dict['obj'].dict['speed'] = int(newspeed)
+
+    def manage_frame(self,key,newvalue):
+        self.frameNumber[key] = self.frameNumber[key] + newvalue
+        self.adjustment = self.adjustment - newvalue
+        self.textUpdate('adjustment',self.adjustment) 
     
+    def saveAndReload(self):
+
+        #open loading and closing file in reading mode
+        data_file = open(config['filename'], 'r+')   
+        existingDict = json.load(data_file)
+        data_file.close()
+
+        #adjusting value
+        existingDict[config['trialname']]['startStamp0'] = int(self.adjustment)
+        self.dict['startStamps'][0] = int(self.adjustment)
+        
+        #new Ratio for next trial 
+        nextTrial =  'trial' + str(config['trialNumber']+1)
+        if nextTrial in existingDict:
+            newRatio = self.dict['startStamps'][0] / self.dict['startStamps'][1]            
+            existingDict[nextTrial]['startStamp0'] = int(existingDict[nextTrial]['startStamp1'] * newRatio)
+
+        #open file in writing mode 
+        data_file =  open(config['filename'], 'w')  
+        json.dump( existingDict , data_file,  indent=5)
+        data_file.close()
+        
+        #quit
+        self.window.quit()  
+
+        #reinitialise
+        self.initialise()
+
+        #reinitialise
+        self.create()
+
+
+
+        

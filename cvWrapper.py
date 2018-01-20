@@ -68,7 +68,7 @@ class base():
         self.dict = {}
         self.dict['name'] = name
         self.dict['kind'] = 'base'
-        self.posAttrList = ['name','kind','saveButton','config']
+        self.posAttrList = ['name','kind','saveButton','config','piu1','meno1','piu10','meno10','piu100','meno100','saveAndReload','adjustment']
         self.notSave = ['name','kind']
         self.dict['saveButton'] = {'interface':True,'widget':'button','command':'saveobject'}
 
@@ -714,6 +714,11 @@ class blocks(base,object):
                 self.dict['ROI']['coordinateBoxesNumPy'].append([]) 
                 self.dict['ROI']['coordinateCenter'].append([])
                 self.dict['ROI']['coordinatesToggle'].append(False)       
+    
+    def addExclusion(self,zone):     
+            
+        self.exclusionBox_tl = np.int0([zone.dict['topLeft']['value']])  #lowerleft
+        self.exclusionBox_br = np.int0([zone.dict['bottomRight']['value']])  # upper-right
 
     def addGaze(self,name):
         
@@ -829,7 +834,7 @@ class blocks(base,object):
                         self.dict['GazeLocation'].append(self.dict['ROI']['blockname'][idx])
                         self.dict['GazeLocationTimestamp'] = np.append(self.dict['GazeLocationTimestamp'],stmpN)
                     else: 
-                        self.dict['GazeLocation'].append('areaFirst')
+                        self.dict['GazeLocation'].append(self.dict['ROI']['name'][idx])
                         self.dict['GazeLocationTimestamp'] = np.append(self.dict['GazeLocationTimestamp'],stmpN)
                 else: 
                     self.dict['ROI']['gaze'][idx] = False 
@@ -848,7 +853,7 @@ class blocks(base,object):
         
         #### RAW DATA
         plt.figure(1)
-        plt.subplot(414)
+        plt.subplot(311)
         
         plt.ylabel('X movment Raw')
 
@@ -863,7 +868,18 @@ class blocks(base,object):
                                 'blocco6':'g',
                                 'blocco7':'y',
                                 'blocco8':'r',
-                                'areaFirst':'k'}
+                                'areaFirst':'k',
+                                'areaSecond':'k',
+                                'first':'k',
+                                'second':'k',
+                                'third':'k',
+                                'fourth':'k',
+                                'fifth':'k',
+                                'sixth':'k',
+                                'seventh':'k',
+                                'eight':'k',
+                                'Model':'K'    
+                                }
 
 
         for idx,movement in enumerate(self.dict['movements']):
@@ -874,31 +890,42 @@ class blocks(base,object):
         plt.xlim([0,xmax+0.2])
 
         #### GAZE
-        plt.subplot(413)
+        plt.subplot(312)
         plt.grid(True)
         
         # Set the ticks and labels 
-        ticks = np.arange(-0.2,8.8, 1)
-        labels = np.flip(np.array(['B8','B7','B6','B5','B4','B3','B2','B1','WA']),0)
+        ticks = np.arange(-0.2,11.8, 1)
+        labels = np.flip(np.array(['B8','B7','B6','B5','B4','B3','B2','B1','M','R','W2','W1']),0)
         plt.yticks(ticks, labels)
         plt.ylabel('Gaze')
-        plt.ylim([0,9])
+        plt.ylim([0,15])
 
         self.dict['BlockPlot']={'areaFirst':0,
-                                'blocco1':1,
-                                'blocco2':2,
-                                'blocco3':3,                              
-                                'blocco4':4,
-                                'blocco5':5,
-                                'blocco6':6,
-                                'blocco7':7,
-                                'blocco8':8}
+                                'areaSecond':1,
+                                'first':2,
+                                'second':2,
+                                'third':2,
+                                'fourth':2,
+                                'fifth':2,
+                                'sixth':2,
+                                'seventh':2,
+                                'eight':2,
+                                'Model':3,
+                                'blocco1':4,
+                                'blocco2':5,
+                                'blocco3':6,                              
+                                'blocco4':7,
+                                'blocco5':8,
+                                'blocco6':9,
+                                'blocco7':10,
+                                'blocco8':11,
+                                 }
         
         gazeLocation = [ self.dict['BlockPlot'][item] for item in self.dict['GazeLocation'] ]
         lastLocation = ''
         secondpointbool=False
         firstpointbool=False
-        GazeArray = []
+        SubtaskArray = []
 
         for idx,Location in enumerate(gazeLocation):
             if lastLocation == Location: continue
@@ -911,33 +938,31 @@ class blocks(base,object):
                 secondpointbool=True
                 stamps.append(self.dict['GazeLocationTimestamp'][idx-1])
             else:
-                GazeArray.append([np.array(stamps),np.array([lastLocation,lastLocation]),self.dict['colorPlot'][self.dict['GazeLocation'][idx-2]]])
+                SubtaskArray.append([np.array(stamps),np.array([lastLocation,lastLocation]),self.dict['colorPlot'][self.dict['GazeLocation'][idx-2]]])
                 secondpointbool=False
                 stamps=[]
                 stamps.append(self.dict['GazeLocationTimestamp'][idx])
                 lastLocation = Location
 
-        ticks=np.array([])
-        labels=np.array([])
-        for gaze in GazeArray:
-            ticks = np.append(ticks,gaze[0])
-            labels = np.append(labels,[''])
-            plt.plot(gaze[0],gaze[1],gaze[2], linewidth=5, solid_capstyle='butt' )
-
+        ticks2=np.array([])
+        labels2=np.array([])
+        for gaze in SubtaskArray:
+            ticks2 = np.append(ticks2,gaze[0])
+            labels2 = np.append(labels2,[''])
+            plt.plot(gaze[0],gaze[1],gaze[2], linewidth=5, linestyle='dashed',dashes=(0.2,0.1), solid_capstyle='butt' )
 
         plt.xlim([0,xmax+0.2])
-        plt.xticks(ticks,labels)
+        plt.xticks(ticks2,labels2)
         
         #### MOVEMENT
-        plt.subplot(412)
+        plt.subplot(313)
         plt.grid(True)
         
-        # Set the ticks and labels 
-        ticks = np.arange(-0.2,8.8, 1)
-        labels = np.flip(np.array(['B8','B7','B6','B5','B4','B3','B2','B1','']),0)
+        ticks = np.arange(-0.2,11.8, 1)
+        labels = np.flip(np.array(['B8','B7','B6','B5','B4','B3','B2','B1','M','R','W1','W2']),0)
         plt.yticks(ticks, labels)
         plt.ylabel('Movement')
-        plt.ylim([0,9])
+        plt.ylim([0,15])
         
         MovementArray = []
         for idx,movment in enumerate(self.dict['movements']):
@@ -946,94 +971,149 @@ class blocks(base,object):
             color = self.dict['colorPlot'][self.dict['movementsBlocks'][idx]]
             MovementArray.append([stamps,block,color])
 
-        ticks = np.array([])
-        labels = np.array([])
+        ticks = ticks2
+        labels = labels2
         
         for move in MovementArray:
             ticks = np.append(ticks,move[0])
             labels = np.append(labels,[''])
-            plt.plot(move[0],move[1],move[2], linewidth=5, solid_capstyle='butt' )
+            plt.plot(move[0],move[1],move[2], linewidth=5,  solid_capstyle='butt' )
         
         plt.xlim([0,xmax+0.2])
         plt.xticks(ticks,labels)
 
         #### PROCEDURE
         ##############
-        plt.subplot(411)
-        plt.grid(True)
+        # plt.subplot(514)
+        # plt.grid(True)
         
-        # Set the ticks and labels 
-        ticks = np.arange(0,2, 1)
-        labels = np.flip(np.array(['Correct','Error']),0)
-        plt.yticks(ticks, labels)
-        plt.ylabel('Procedure')
+        # ticks = np.arange(0,3, 1)
+        # labels = np.flip(np.array(['Correct','Error','']),0)
+        # plt.yticks(ticks, labels)
+        # plt.ylabel('Procedure')
 
-        Procedure = []
-        for idx,taskName in enumerate(self.dict['proceduralTask']):
+        # Procedure = []
+        # for idx,taskName in enumerate(self.dict['proceduralTask']):
             
-            if idx>len(self.dict['movementsStamps'])-1: continue
+        #     if idx>len(self.dict['movementsStamps'])-1: continue
 
-            if 'associatedMovement' in self.dict['proceduralTask'][taskName]:
-                index = self.dict['proceduralTask'][taskName]['associatedMovement']
-                taskNumber = [1,1]    
-                color = 'g'     
-            else:
-                index = idx
-                taskNumber = [0,0]
-                color= 'r'
+        #     if 'associatedMovement' in self.dict['proceduralTask'][taskName]:
+        #         index = self.dict['proceduralTask'][taskName]['associatedMovement']
+        #         taskNumber = [1,1]    
+        #         color = 'g'     
+        #     else:
+        #         index = idx
+        #         taskNumber = [0,0]
+        #         color= 'r'
 
-            if index < 1: stamps = np.array([0,self.dict['movementsStamps'][index][-1]])
-            else: stamps = np.array([self.dict['movementsStamps'][index-1][-1],self.dict['movementsStamps'][index][-1]])
+        #     if index < 1: stamps = np.array([0,self.dict['movementsStamps'][index][-1]])
+        #     else: stamps = np.array([self.dict['movementsStamps'][index-1][-1],self.dict['movementsStamps'][index][-1]])
            
-            gazebool = [ True if gaze>stamps[0] and gaze<stamps[1] else False for idx,gaze in enumerate(self.dict['GazeLocationTimestamp']) ]
+        #     gazebool = [ True if gaze>stamps[0] and gaze<stamps[1] else False for idx,gaze in enumerate(self.dict['GazeLocationTimestamp']) ]
             
-            GazeLocationTimestamp = self.dict['GazeLocationTimestamp'][gazebool]
-            GazeLocation = [ self.dict['BlockPlot'][item] for item in np.array(self.dict['GazeLocation'])[gazebool] ]
+        #     GazeLocationTimestamp = self.dict['GazeLocationTimestamp'][gazebool]
+        #     GazeLocationName = np.array(self.dict['GazeLocation'])[gazebool]
+        #     GazeLocation = [ self.dict['BlockPlot'][item] for item in GazeLocationName ]
 
-            lastLocation = ''
-            secondpointbool=False
-            firstpointbool=False
-            GazeArray = []
+        #     lastLocation = ''
+        #     secondpointbool=False
+        #     firstpointbool=False
+        #     SubtaskArray = []
 
-            # for idx2,Location in enumerate(GazeLocation):
-            #     if lastLocation == Location: continue
-            #     elif firstpointbool==False:
-            #         gazestamps=[]
-            #         lastLocation = Location
-            #         firstpointbool=True
-            #         gazestamps.append(self.dict['GazeLocationTimestamp'][idx2])
-            #     elif secondpointbool==False:
-            #         secondpointbool=True
-            #         gazestamps.append(self.dict['GazeLocationTimestamp'][idx2-1])
-            #     else:
-            #         GazeArray.append([np.array(gazestamps),np.array([lastLocation,lastLocation]),self.dict['colorPlot'][self.dict['GazeLocation'][idx2-2]]])
-            #         secondpointbool=False
-            #         gazestamps=[]
-            #         gazestamps.append(self.dict['GazeLocationTimestamp'][idx2])
-            #         lastLocation = Location
+        #     for idx2,Location in enumerate(GazeLocation):
+        #         if lastLocation == Location: continue
+        #         elif firstpointbool==False:
+        #             subtaskstamps=[]
+        #             lastLocation = Location
+        #             firstpointbool=True
+        #             subtaskstamps.append(GazeLocationTimestamp[idx2])
+        #         elif secondpointbool==False:
+        #             secondpointbool=True
+        #             subtaskstamps.append(GazeLocationTimestamp[idx2-1])
+        #         else:
+        #             correctWrong = 2 if self.dict['proceduralTask'][taskName]['block'] == GazeLocationName[idx2-2] or GazeLocationName[idx2-2] == 'areaFirst' else 1
+        #             if not GazeLocationName[idx2-2] == 'areaFirst': SubtaskArray.append([np.array(subtaskstamps),correctWrong])
+        #             secondpointbool=False
+        #             subtaskstamps=[]
+        #             subtaskstamps.append(GazeLocationTimestamp[idx2])
+        #             lastLocation = Location
 
-            Procedure.append([stamps,taskNumber,color,GazeArray])
+        #     movmentStamps = np.array([self.dict['movementsStamps'][idx][0],self.dict['movementsStamps'][idx][-1]])
+        #     correctWrong = 2 if self.dict['proceduralTask'][taskName]['block'] == self.dict['movementsBlocks'][index] else 1
+        #     SubtaskArray.append([np.array(movmentStamps),correctWrong])
+
+        #     Procedure.append([stamps,taskNumber,color,SubtaskArray])
                 
-        ticks = np.array([])
-        labels = np.array([])
+        # ticks = np.array([])
+        # labels = np.array([])
+        # correct = []
+        # wrong = []
+        # indexCorrect = []
+        # indexWrong = []
+        # widthWrong = []
+        # widthCorrect = []
 
-        for task in Procedure:
-            GazeArray = task[3]
+        # for idx,task in enumerate(Procedure):
 
-            # for gaze in GazeArray:
-            #     ticks = np.append(ticks,gaze[0])
-            #     labels = np.append(labels,['',''])
-            #     plt.plot(gaze[0],gaze[1],gaze[2], linewidth=5, solid_capstyle='butt' )
+        #     ticks = np.append(ticks,task[0][1])
+        #     labels = np.append(labels,['',''])
 
-            ticks = np.append(ticks,task[0][1])
-            labels = np.append(labels,['',''])
-            plt.plot(task[0],task[1],task[2], linewidth=20, solid_capstyle='butt' )
+        #     if task[2]=='g': 
+        #         correct.append(2)
+        #         indexCorrect.append(np.average(task[0])) 
+        #         widthCorrect.append(task[0][1]-task[0][0])  
+        #     else: 
+        #         wrong.append(1)
+        #         indexWrong.append(np.average(task[0]))   
+        #         widthWrong.append(task[0][1]-task[0][0])
+
+        # plt.bar(indexCorrect, correct, widthCorrect, color='g')
+        # plt.bar(indexWrong, wrong, widthWrong, color='r')
+
+        # plt.ylim([0,4])        
+        # plt.xlim([0,xmax+0.2])
+        # plt.xticks(ticks,labels)
+
+        # #### PROCEDURE
+        # ##############
+        # plt.subplot(515)
+        # plt.grid(True)
+        
+        # ticks = np.arange(0,3, 1)
+        # labels = np.flip(np.array(['Correct','Error','']),0)
+        # plt.yticks(ticks, labels)
+        # plt.ylabel('Procedure')
             
-            
+        # ticks = np.array([])
+        # labels = np.array([])
+        # correct = []
+        # wrong = []
+        # indexCorrect = []
+        # indexWrong = []
+        # widthWrong = []
+        # widthCorrect = []
 
-        plt.ylim([0,4])        
-        plt.xlim([0,xmax+0.2])
-        plt.xticks(ticks,labels)
+        # for task in Procedure:
+        #     SubtaskArray = task[3]
+        #     for subtask in SubtaskArray:
+        #         ticks = np.append(ticks,subtask[0])
+        #         labels = np.append(labels,['',''])
+                
+        #         if subtask[1]==2: 
+        #             correct.append(2)
+        #             indexCorrect.append(np.average(subtask[0])) 
+        #             widthCorrect.append(subtask[0][1]-subtask[0][0])  
+        #         else: 
+        #             wrong.append(1)
+        #             indexWrong.append(np.average(subtask[0])) 
+        #             widthWrong.append(subtask[0][1]-subtask[0][0])  
+
+        # plt.bar(indexCorrect, correct, widthCorrect, color='g')
+        # plt.bar(indexWrong, wrong, widthWrong, color='r')
+
+        # plt.ylim([0,4])        
+        # plt.xlim([0,xmax+0.2])
+        # plt.xticks(ticks,labels)
 
         ##RENDER ALL
         plt.show()
@@ -1064,7 +1144,7 @@ class blocks(base,object):
     def adjustBlockPosInWa(self,blockName,idx):
         
         block = self.dict['persistentModel'][blockName]
-        if not(self.dict['contours']['ROI'][idx]=='areaFirst'): return
+        if not(self.dict['contours']['ROI'][idx]=='areaFirst' or self.dict['contours']['ROI'][idx]=='areaSecond'): return
         #elif not(block['blocked']):return
         elif self.dict['contours']['ROIhand'][idx]:return
         
@@ -1223,7 +1303,22 @@ class blocks(base,object):
             block['positionList'],
             block['timeList'],
             block['deleteList']] for (key,block) in self.dict['persistentModel'].items()],dtype=object)
-    
+   
+    def removeContoursInExclusionZone(self):
+
+        if len(self.dict['contours']['center'])>0:
+            inidx = np.all(np.logical_and(self.exclusionBox_tl <= self.dict['contours']['center'], self.dict['contours']['center'] <= self.exclusionBox_br), axis=1)
+            #deleteIndexes = np.nonzero(inidx)[0]
+            deleteIndexes = np.nonzero(inidx==False)[0]
+
+            if len(deleteIndexes)>0:
+
+                for idx in deleteIndexes:    
+                    self.setContoursToRemove(idx) 
+                    removeQuestion = True
+                    
+                self.removeContours()  
+
     def removeContoursInBlockedBlocks(self):
 
         for blockName in self.dict['persistentModel']:
@@ -1578,11 +1673,12 @@ class blocks(base,object):
             task['timestamp']=''
          
     def process(self):
-        
+
+        self.removeContoursInExclusionZone()
         self.sizeFiltering()
         self.detectMinBoundingBoxes()
         self.detectPosition()
-        self.removeContoursInBlockedBlocks()        
+        self.removeContoursInBlockedBlocks()       
         self.detectType()
         
         if self.dict['persistentModelToggle']['value']: 
@@ -1764,7 +1860,7 @@ class perspective(base,object):
         self.orgRect = np.float32([[0,0],[840,0],[840,140],[0,140]]).reshape(-1,1,2)
         self.checkersize=[5,5]
         self.kernel = np.ones((2,2),np.uint8)
-        self.shp =np.float32([[0,0],[640,0],[640,311],[0,311],[0,0]])
+        self.shp =np.float32([[0,0],[640,0],[640,480],[0,480],[0,0]])
         self.trnsfPtsBool=False
         self.trgRectBool = False
         self.dict['TargetRect'] = {"value": False,"interface": True,"widget": "button","command": "toggleBoolean"}   

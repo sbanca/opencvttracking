@@ -52,18 +52,18 @@ Thresh = {}
 Thresh['one'] = cvW.thresh('one')
 
 
-#initialise Bins and workAreas
-##################################
+#initialise Bins and workAreas and exclusionZones
+#################################################
 
 Bins = {}
-BinList = ['first','second','third','fourth','fifth','sixth','seventh','eight']
+BinList =  config['BinList']
 
 for binname in BinList:
     Bins[binname] = cvW.binbox(binname)
     Bins[binname].dictToJson(config['filename'],mode='load')
 
 wAreas = {}
-wAreaList = ['areaFirst'] 
+wAreaList = config['wAreaList']
 
 for wArea in wAreaList:
     wAreas[wArea] = cvW.binbox(wArea)
@@ -72,11 +72,14 @@ for wArea in wAreaList:
 OrgRect = cvW.binbox('orgRect')
 OrgRect.dictToJson(config['filename'],mode='load')
 
+exclRect = cvW.binbox('exclRect')
+exclRect.dictToJson(config['filename'],mode='load')
+
 
 #Import Gaze positions
 ######################
 GazePositions = cvW.eyeTrackerData('video1')
-GazePositions.config(path=config['path'] +'exports/',startstamp=0,key='video1')
+GazePositions.config(path=config['path'] +'exports/'+config['exportName']+'/',startstamp=0,key='video1')
 GazePositions.initialise()
 
 
@@ -102,3 +105,4 @@ Blocks.dictToJson(config['filename'],mode='load')
 Blocks.addROI(Bins)
 Blocks.addROI(wAreas)
 Blocks.addGaze(perspective)
+Blocks.addExclusion(exclRect)
